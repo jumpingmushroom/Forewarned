@@ -378,9 +378,13 @@ Agreed so far:
   seen per boss and ability, plus the boss's health percentage, so later "next X in ~N s" timers
   only add a reader. Boss-specific logic (phase announces, Moder's flying state) lives in small
   optional overrides on the module class.
+- **Earshot (2026-10-05): independent for now.** No coupling: each mod works alone and both run
+  together; the agreed layout keeps their HUDs apart. Earshot may still caption boss sounds that
+  Forewarned has turned into warnings. A later, optional duplicate-suppression check (found by
+  plugin GUID, no hard dependency) is to be reconsidered after multiplayer, once both have been
+  seen in a real fight.
 
 Open, to settle in the brainstorm before any design is written:
-- Accessibility: working alongside Earshot (colour-blind safety settled with the colours).
 - The first milestone's boss list and its definition of done.
 
 ## 10. Ability defaults and wording (agreed 2026-10-05)
