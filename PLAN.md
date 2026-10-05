@@ -328,7 +328,8 @@ Agreed so far:
   line, or nothing for minor attacks. Attacks that pick a target (fissure, meteors, wall of fire,
   roots) count as aimed at you if you're within their range and the boss faces you, or you're the
   only player in range. Each ability has an "always warn" option that skips the test. Solo, you're
-  always the target, so the facing guess matters only in multiplayer.
+  always the target, so the facing guess matters only in multiplayer. An attack trigger from a
+  tracked boss within 100 m counts as a boss fight even before its alert reaches this client.
 - **Urgency (2026-10-05): three levels, named by severity.**
   - **Danger:** special warning, alarm sound, screen-edge flash. Default for positional and
     unblockable attacks (fissure, flame breath, poison cloud, nova, stomp, spike rain…).

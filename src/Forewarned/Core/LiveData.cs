@@ -26,6 +26,15 @@ namespace Forewarned.Core
             List<ItemDrop.ItemData> items = boss.GetInventory()?.GetAllItems();
             if (items == null || items.Count == 0)
                 return false;
+            // ObjectDB may not have filled in every item's m_dropPrefab yet: that's not a missing
+            // ability, it's not ready, so retry on the next scan instead of warning per ability.
+            bool objectDbNotReady = items.TrueForAll(i => i.m_dropPrefab == null);
+            if (objectDbNotReady)
+            {
+                if (Warned.Add(prefab + "/objectdb"))
+                    ForewarnedPlugin.Log.LogWarning("Forewarned: " + prefab + "'s items have no drop prefab (ObjectDB not ready?); using offline numbers");
+                return false;
+            }
             BossModule module = Runtime.Engine.Registry.ModuleFor(prefab);
             StringBuilder log = Logged.Add(prefab) ? new StringBuilder("Forewarned: live numbers for " + prefab + ":") : null;
             foreach (AbilitySpec a in module.Abilities)
@@ -118,8 +127,8 @@ namespace Forewarned.Core
         {
             if (projectile == null)
                 return;
-            BoxCollider box = projectile.GetComponentInChildren<BoxCollider>();
-            Aoe aoe = projectile.GetComponentInChildren<Aoe>();
+            BoxCollider box = projectile.GetComponentInChildren<BoxCollider>(true);
+            Aoe aoe = projectile.GetComponentInChildren<Aoe>(true);
             if (aoe != null && aoe.m_useTriggers && box != null)
             {
                 n.Range = box.size.z;

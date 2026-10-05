@@ -182,6 +182,15 @@ namespace Forewarned.Tests
         }
 
         [Fact]
+        public void OnHitReturnsThePairedWindUp()
+        {
+            Engine e = Make();
+            e.OnTrigger(Fader("attack_flamebreath", 10f), At(0f, 10f), true);
+            Assert.Equal(2f, e.OnHit(7, 12f).Value, 3);
+            Assert.Null(e.OnHit(7, 13f));
+        }
+
+        [Fact]
         public void PhasesAreAnnounced()
         {
             Engine e = Make();

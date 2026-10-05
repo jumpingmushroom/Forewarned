@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Forewarned.Core;
 using HarmonyLib;
 using UnityEngine;
@@ -30,8 +31,12 @@ namespace Forewarned.Patches
                 TrackedBoss t = BossWatch.Find(ev.m_character);
                 if (t == null)
                     return;
-                Runtime.Engine.OnHit(t.Id, Time.time);
-                Runtime.Debug("Forewarned: " + t.Prefab + " hit at " + Time.time.ToString("0.00"));
+                float now = Time.time;
+                float? windUp = Runtime.Engine.OnHit(t.Id, now);
+                string line = "Forewarned t=" + now.ToString("F2", CultureInfo.InvariantCulture) + " " + t.Prefab + " hit";
+                if (windUp.HasValue)
+                    line += " after " + windUp.Value.ToString("F2", CultureInfo.InvariantCulture) + "s";
+                Runtime.Debug(line);
             }
             catch (Exception e)
             {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Forewarned.Core.Model;
 using UnityEngine;
 
@@ -45,6 +46,28 @@ namespace Forewarned.Core
             return c != null && Tracked.TryGetValue(c.GetInstanceID(), out t) ? t : null;
         }
 
+        /// <summary>Like <see cref="Find"/>, but starts tracking an untracked boss on its first attack
+        /// trigger instead of waiting for the next scan (PLAN.md §9: an Eikthyr can wake, alert and
+        /// attack in one AI tick, before <see cref="Tick"/> has seen it).</summary>
+        public static TrackedBoss FindOrTrack(Character c)
+        {
+            TrackedBoss t = Find(c);
+            if (t != null)
+                return t;
+            if (c == null || c is Player || c.IsDead())
+                return null;
+            int key = c.GetInstanceID();
+            if (NotBosses.Contains(key))
+                return null;
+            string prefab = Utils.GetPrefabName(c.gameObject);
+            if (!Runtime.Engine.Registry.Tracks(prefab))
+                return null;
+            t = new TrackedBoss { Character = c, Prefab = prefab, Id = key };
+            Tracked[key] = t;
+            Runtime.Debug("Forewarned: tracking " + prefab + " (" + key + ")");
+            return t;
+        }
+
         public static bool FightActive()
         {
             Player me = Player.m_localPlayer;
@@ -55,6 +78,19 @@ namespace Forewarned.Core
                     Vector3.Distance(t.Character.transform.position, me.transform.position) <= FightRange)
                     return true;
             return false;
+        }
+
+        /// <summary>PLAN.md §9: an attack trigger from a tracked boss within range counts as a boss
+        /// fight even before <see cref="TrackedBoss.Alerted"/> (refreshed only every <see cref="Interval"/>)
+        /// reflects its alert, or before the alert ZDO has reached this (non-owning) client at all.</summary>
+        public static bool FightActiveFor(TrackedBoss t)
+        {
+            if (FightActive())
+                return true;
+            Player me = Player.m_localPlayer;
+            if (t == null || t.Character == null || me == null || t.Character.IsDead())
+                return false;
+            return Vector3.Distance(t.Character.transform.position, me.transform.position) <= FightRange;
         }
 
         public static Scene SceneFor(Character boss)
@@ -126,7 +162,17 @@ namespace Forewarned.Core
         {
             Character c = t.Character;
             if (!t.LiveRead)
-                t.LiveRead = LiveData.Read(c as Humanoid, t.Prefab);
+            {
+                try
+                {
+                    t.LiveRead = LiveData.Read(c as Humanoid, t.Prefab);
+                }
+                catch (Exception e)
+                {
+                    ForewarnedPlugin.WarnOnce("LiveData " + t.Prefab, e);
+                    t.LiveRead = true;
+                }
+            }
 
             float hp = c.GetHealthPercentage();
             if (hp != t.Health)
@@ -136,13 +182,19 @@ namespace Forewarned.Core
             }
 
             BaseAI ai = c.GetBaseAI();
-            t.Alerted = ai != null && ai.IsAlerted();
+            bool alerted = ai != null && ai.IsAlerted();
+            if (alerted != t.Alerted)
+            {
+                t.Alerted = alerted;
+                Runtime.Debug("Forewarned t=" + now.ToString("F2", CultureInfo.InvariantCulture) + " " + t.Prefab + " " + (alerted ? "alerted" : "calm"));
+            }
             if (!t.Alerted)
                 t.Pulled = false;
             else if (!t.Pulled && Vector3.Distance(c.transform.position, me) <= FightRange)
             {
                 t.Pulled = true;
                 Runtime.Engine.OnPull(t.Id, t.Prefab, now);
+                Runtime.Debug("Forewarned t=" + now.ToString("F2", CultureInfo.InvariantCulture) + " " + t.Prefab + " pulled");
             }
 
             bool flying = ReadFlying(c);

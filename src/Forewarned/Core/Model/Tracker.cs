@@ -16,6 +16,9 @@ namespace Forewarned.Core.Model
         public const float MaxWindUp = 6f;
         public const int MaxSamples = 9;
 
+        /// <summary>The wind-up (hit time minus trigger time) the last successful <see cref="OnHit"/> paired.</summary>
+        public float LastWindUp { get; private set; }
+
         private sealed class Pending
         {
             public string Prefab;
@@ -57,6 +60,7 @@ namespace Forewarned.Core.Model
             list.Add(dt);
             if (list.Count > MaxSamples)
                 list.RemoveAt(0);
+            LastWindUp = dt;
             return p.AbilityId;
         }
 

@@ -145,11 +145,14 @@ namespace Forewarned.Core.Model
             return Math.Abs(learned.Value - spec.WindUp) <= spec.WindUp * 0.5f ? learned : null;
         }
 
-        public void OnHit(long bossId, float time)
+        /// <returns>The paired wind-up (hit time minus trigger time), or null when nothing was paired.</returns>
+        public float? OnHit(long bossId, float time)
         {
             string abilityId = Tracker.OnHit(bossId, time);
-            if (abilityId != null)
-                Board.Hit(abilityId, bossId, time);
+            if (abilityId == null)
+                return null;
+            Board.Hit(abilityId, bossId, time);
+            return Tracker.LastWindUp;
         }
 
         public void OnHealth(long bossId, string prefab, float hp, float now)

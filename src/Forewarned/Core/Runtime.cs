@@ -23,7 +23,14 @@ namespace Forewarned.Core
                 return;
             if (Player.m_localPlayer == null)
             {
-                if (_hadPlayer)
+                // Between death and respawn the world (and the fight) is still there: only the
+                // dead player's own board and announcer should go, not every boss being tracked.
+                if (ZNet.instance != null)
+                {
+                    Engine.Board.Clear();
+                    Engine.Announcer.Clear();
+                }
+                else if (_hadPlayer)
                 {
                     Engine.Clear();
                     BossWatch.Clear();

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Forewarned.Core;
 using Forewarned.Core.Model;
 using HarmonyLib;
@@ -21,15 +22,18 @@ namespace Forewarned.Patches
                 if (!Runtime.Ready || Player.m_localPlayer == null)
                     return;
                 Character c = __instance.GetComponent<Character>();
-                TrackedBoss t = BossWatch.Find(c);
+                TrackedBoss t = BossWatch.FindOrTrack(c);
                 if (t == null)
                     return;
                 var e = new TriggerEvent { BossId = t.Id, Prefab = t.Prefab, Trigger = name, Time = Time.time };
-                TriggerKind kind = Runtime.Engine.OnTrigger(e, BossWatch.SceneFor(c), BossWatch.FightActive());
+                TriggerKind kind = Runtime.Engine.OnTrigger(e, BossWatch.SceneFor(c), BossWatch.FightActiveFor(t));
                 if (kind == TriggerKind.Unmapped && PluginConfig.LogUnmappedTriggers.Value)
                     UnmappedLog.Note(t.Prefab, name);
-                if (Runtime.Engine.Recent.Count > 0 && Runtime.Engine.Recent[0].Trigger == name)
-                    Runtime.Debug("Forewarned: " + t.Prefab + " " + name + " -> " + Runtime.Engine.Recent[0].Outcome);
+                string line = "Forewarned t=" + e.Time.ToString("F2", CultureInfo.InvariantCulture) + " " + t.Prefab + " " + name + " [" + kind + "]";
+                if ((kind == TriggerKind.Mapped || kind == TriggerKind.Unmapped) &&
+                    Runtime.Engine.Recent.Count > 0 && Runtime.Engine.Recent[0].Trigger == name)
+                    line += " -> " + Runtime.Engine.Recent[0].Outcome;
+                Runtime.Debug(line);
             }
             catch (Exception e)
             {
