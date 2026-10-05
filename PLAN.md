@@ -131,7 +131,7 @@ gets (code.md §3):
 **Research conclusion:** `RPC_SetTrigger` is the one attack signal that is the same in solo and
 multiplayer. Keyed on (boss prefab, trigger name), it covers every attack of every boss. The
 offline data maps each pair to the item, so the item's ranges, cooldown, gates and geometry are
-known on any client. The decision is still open (§9).
+known on any client. Chosen in §9.
 
 ## 4. Boss attack catalogue
 
@@ -302,10 +302,14 @@ character, not the sound name.
 
 1. Offline wind-ups against in-game timing (trigger → `Hit` event), per boss.
 2. On a non-owner: `RPC_SetTrigger` arrival and its lag, and `RightItem` order.
-3. Whether the boss start-effect ZSFX prefabs carry a `ZNetView` at runtime (non-owner sound cue).
+3. ~~Whether the boss start-effect ZSFX prefabs carry a `ZNetView`~~: no longer needed, the sound
+   hook was not chosen (§9).
 4. The boss health bar's on-screen rect.
 5. Whether boss rigs write `LookTarget` (who the boss is targeting, for non-owners).
 6. What vanilla does with the Queen's `attack_slash0`.
+7. On a non-owner: that Moder's `flying` animator bool replicates (BossWatch reads it for the
+   takeoff and landing announces), and that `CharacterAnimEvent.Hit`/`OnAttackTrigger` fire there
+   (they should: the animator runs on every client).
 
 ## 9. Decisions
 
@@ -403,7 +407,7 @@ Agreed so far:
      unit-tested and green.
   7. Probes settled: the boss health bar's screen rect; offline vs live wind-up.
 
-All brainstorm decisions are settled (2026-10-05). The design follows in §11.
+All brainstorm decisions are settled (2026-10-05). The ability table is §10 and the design §11.
 
 ## 10. Ability defaults and wording (agreed 2026-10-05)
 
@@ -503,3 +507,174 @@ F1. **Info:** announce line only. **None:** no warning. Wind-up: seconds to the 
 | Fader | 85%, 55%, 35%, 25% | “Fader 85%: Fissure and Flame breath”, “55%: adds”, “35%: faster fissures and adds”, “25%: faster meteors” |
 | The Queen | 99%, 90%, 80%, 70%, 60% | “The Queen 90%: Teleport”, and so on as each ability unlocks |
 | Kall Fimbulbringer | 75%, 50% (phase 1); phase 2; 75%, 50%, 35% (phase 3) | “Phase 2: kill the aspects”, “Kall 35%: Spike rain”. Each aspect is announced as it spawns and uses its original boss’s warnings. |
+
+## 11. Design (agreed 2026-10-05)
+
+### 11.1 Architecture and data flow
+
+```
+ game (Unity side)                         pure model (Core/Model, no Unity)                    HUD (Unity side)
+ RPC_SetTrigger postfix ──► TriggerEvent ─┐
+ CharacterAnimEvent hit postfix ► HitEvent┼─► Tracker ──► BossModule ──► Relevance ──► WarningBoard ──► special warnings + bar
+ BossWatch (0.2 s scan) ──► BossState ────┘                                             Announcer   ──► announce lines
+ LiveData (once per boss) ──► AbilityNumbers                                                         ──► ground marker, path arrow,
+                                                                                                         edge flash, alert sounds
+```
+
+- Game adapters turn Unity objects into plain structs. The trigger postfix is the warning signal.
+  The hit postfix (`CharacterAnimEvent.Hit` / `OnAttackTrigger`, every client) marks the real hit,
+  which ends the warning on time and measures the real wind-up. BossWatch tracks nearby bosses
+  and aspects; LiveData reads each boss's items once.
+- Everything from `Tracker` to `WarningBoard` and `Announcer` is pure C#. The board is ticked with
+  the current time and returns a snapshot (active warnings with level, text, start and hit times,
+  shape, arrow); the HUD only draws snapshots, as in Earshot.
+- Nothing depends on owning the boss. Only the targeted-attack guess in `Relevance` improves later
+  for multiplayer.
+
+### 11.2 Model (`Core/Model/`)
+
+- **`AbilitySpec`**, our decisions plus fallback numbers: `Id` (`fader.flamebreath`),
+  `ItemPrefab` (`Fader_Flamebreath`), `Triggers` (several where the game appends an index),
+  `DefaultLevel`, `DefaultOn`, `TitleKey`, `ActionKey` (`{boss}` allowed), `Response` (GetBehind,
+  LeaveArea, LeaveLine, KeepMoving, ExitRing, BreakLos, Parry, KillAdds, Find), `Shape` (kind
+  Cone/Circle/Line/Ring; anchor Boss/Target; radius or range, angle, width, forward offset; and
+  the source LiveData reads it from), and fallback cooldown, health gates, wind-up and hit count
+  from §4. Announce-only abilities have level Info and an announce key.
+- **`AbilityNumbers`**: live values from the game; each one present overrides the fallback.
+- **`BossModule`** (one subclass per boss, in `Core/Model/Bosses/`): its prefabs (`Fader`, later
+  `Aspect_Fader`), boss name token, abilities and phase thresholds. Optional overrides:
+  `OnHealth` (default: an announce when a threshold is crossed downwards, once per threshold per
+  fight), `OnStateChanged` (Moder's flying), `OnPull`.
+- **`ModuleRegistry`**: prefab → module, (prefab, trigger) → ability. An ignore list for non-attack
+  triggers (`attack_abort`, `detach`, stagger and the like). Other unmapped triggers on a tracked
+  boss are reported for `LogUnmappedTriggers`.
+- **`Tracker`**, per boss instance (ZDOID): triggers seen (time, position, facing), health
+  percentage, each ability's last use, and the learned wind-up per (prefab, trigger) from trigger →
+  hit pairs (running average, outliers dropped). Future timers read from here.
+- **`Geometry` / `AreaTest`**: flat 2-D vectors. The local player is Inside, Near (2 m margin) or
+  Outside each shape, from the boss's position and facing. Target-anchored shapes count as aimed
+  at you if you're in range and the boss faces you (within the item's max angle), or you're the
+  only player in range. `SafeDirection` turns response + shape into the arrow direction: around
+  the back, the nearest edge out, perpendicular to a line, or through the ring's gap (the side
+  facing away from the boss, where the wall starts).
+- **`Relevance`**: Inside or Near → special warning; Outside → an announce for Danger, nothing for
+  Caution; always-warn skips the test. Disabled abilities and bosses produce nothing.
+- **`WarningBoard`**: two slots, newest on top; a Caution never evicts a Danger; the same ability
+  replaces its own line. A warning lives until hit + 0.5 s (1.2 s minimum), then fades over 0.3 s;
+  a real hit event moves the end. Sound is gated to once per ability per second.
+- **`Announcer`**: up to three lines, 4 s each, newest at the bottom.
+- **`IAbilitySettings`**: on/off, sound, visual, level and always-warn per ability; the model never
+  touches BepInEx.
+- **`Translations` / `TextCheck`**: copied from Earshot.
+
+### 11.3 Game side (`Core/`, `Patches/`)
+
+- **`AnimTriggerPatch`**: postfix on `ZSyncAnimation.RPC_SetTrigger(long, string)`. Looks the
+  character up by instance ID in BossWatch's table (one dictionary miss for everything else) and
+  builds a `TriggerEvent` (boss ID, prefab, trigger, `Time.time`, flat position and facing, health
+  percentage).
+- **`AnimHitPatch`**: postfix on `CharacterAnimEvent.Hit` and `OnAttackTrigger` → `HitEvent` for
+  tracked bosses.
+- **`BossWatch`**: every 0.2 s scans `Character.GetAllCharacters()` within 120 m for registered
+  prefabs (so aspects count without `IsBoss()`). Keeps the instance table, health percentage and
+  alerted state from the ZDO, and Moder's `flying` from the replicated animator bool (probe on a
+  non-owner). "Boss fight active" = a tracked boss within 100 m that is alerted (vanilla's boss-bar
+  rule). Raises pull, health and state changes. "Only player in range" uses
+  `Player.GetAllPlayers()`.
+- **`LiveData`**: once per boss prefab, matches `item.m_dropPrefab.name` against each spec's
+  `ItemPrefab` in the boss's inventory: `m_aiAttackInterval`, `m_aiMin/MaxHealthPercentage`,
+  `m_aiAttackRange`/`RangeMin`, `m_aiAttackMaxAngle`; the shape from the spec's source
+  (`AttackCone`: `m_attackRange`, `m_attackAngle`; `AttackSphere`: `m_attackRayWidth` at
+  `m_attackRange` ahead; `SpawnAbility`: `m_attackProjectile` → `m_spawnRadius` and its AoE's
+  `m_radius`; `Aoe`: radius or trigger box; `Fixed`). A missing item or component falls back to
+  the offline numbers and logs once.
+- **Wind-up**: the tracker's measurement, with the offline value until the first hit is seen.
+- **Robustness**: every patch and tick in try/catch with a warn-once; nothing runs without a
+  local player; all state cleared on logout.
+- **Console** (`ForewarnedConsole`): `forewarned` (tracked bosses, the last 20 triggers with their
+  verdicts, live vs offline numbers), `forewarned test danger|caution|info`, `forewarned demo`
+  (a scripted Fader sequence for screenshots).
+
+### 11.4 HUD and visuals (`UI/`)
+
+- **Canvas** under `Hud.instance.m_rootObject`, so it hides with the HUD (F3, photo mode).
+  TextMeshPro with the game's font (from MessageHud's centre text). Sprites (⚠, vignette, bar)
+  generated in code.
+- **Special warnings**: two slots anchored `WarningOffsetY` (120 px) above centre. Danger: 34 px
+  title in its colour with a thick dark outline and the ⚠ sprite, 20 px white action line. Caution:
+  26 px, no ⚠. Scaled by the game's GUI scale × `Scale`.
+- **Countdown bar** under its warning (300 px Danger, 200 px Caution), filled in the level colour,
+  draining from trigger to hit, remaining seconds to one decimal at its right. It snaps to the real
+  hit.
+- **Announces**: up to three 20 px lines at top centre below the boss bar (fixed offset until the
+  boss-bar probe), Info colour.
+- **Edge flash**: a full-screen vignette in the Danger colour, one pulse to 0.45 alpha and back over
+  0.4 s; never repeats; can be turned off.
+- **Ground marker**: a world-space `LineRenderer` outline plus a faint fill mesh in the level colour,
+  heights sampled at ~48 points from the ground. Boss-anchored shapes follow the boss's live
+  position and facing; target-anchored shapes sit where they will land (at you for meteors and
+  fissure, the ring around you for wall of fire). Pooled, at most two.
+- **Path arrow**: a flat ~2.5 m world-space arrow at the player's feet, white with a dark edge,
+  pointing along `SafeDirection`, updated every frame, hidden once the player is out of the area.
+- **Alert sounds**: synthesised at startup with `AudioClip.Create`. Horn: ~0.45 s, 110 Hz with a few
+  harmonics, soft attack and release. Chime: two short sine notes a fifth apart. One 2-D
+  `AudioSource` at `Volume` × the game's master volume (the SFX slider is ignored).
+
+### 11.5 Config, translations, identity
+
+- GUID `com.jumpingmushroom.forewarned`; Thunderstore `Jumpingmushroom-Forewarned`; repo
+  `github.com/jumpingmushroom/Forewarned`. BepInEx 5, no Jotunn. A game-version mismatch is logged,
+  not refused.
+- **Config** (`com.jumpingmushroom.forewarned.cfg`), live via `SettingChanged`:
+
+  | Section | Settings (default) |
+  |---|---|
+  | `00 General` | `Enabled` (on), `OnlyDuringBossFight` (on), `LogUnmappedTriggers` (off), `Verbose` (off, advanced) |
+  | `01 Display` | `Scale` (1), `WarningOffsetY` (120), `AnnounceOffsetY`, `ShowCountdownBar` (on), `ShowSeconds` (on), `EdgeFlash` (on), `GroundMarkers` (on; master for all visuals), `PathArrow` (on), `MarkerFillOpacity` (0.25), `DangerColor` / `CautionColor` / `InfoColor` (advanced) |
+  | `02 Sounds` | `Volume` (0.7), `TestDanger` / `TestCaution` buttons (custom drawers; also `forewarned test`) |
+  | `03 Eikthyr` … `10 Kall Fimbulbringer` | `Enabled`, `Pull and phase announces`, per ability `X: warning` / `X: sound` / `X: visual`, advanced `X: level` and `X: always warn` |
+
+  Per-ability rows are generated from the module specs, with defaults from §10.
+- **Translations**: embedded `translations/English.txt` (`key = text`), e.g.
+  `fader.flamebreath.title = FLAME BREATH`, `fader.flamebreath.action = Get behind {boss}`, shared
+  actions and announce templates (`phase = {boss} {pct}%: {what}`). `{boss}` is the game's
+  localised boss name. A file named after `Localization.GetSelectedLanguage()` in
+  `BepInEx/config/Forewarned/translations/` overrides keys, English as fallback. 0.1.0 ships
+  English only; a test checks every module key exists in `English.txt` and passes `TextCheck`.
+
+### 11.6 Repo, tests, dev loop
+
+```
+Forewarned/
+  Directory.Build.props, Forewarned.sln, .gitignore, LICENSE, CHANGELOG.md, README.md, PLAN.md, CLAUDE.md
+  build/        package.sh, publish.sh, make_icon.py   (deploy/logs/shot/crop.sh: local, gitignored)
+  thunderstore/ manifest.json, README.md, icon.png
+  tools/        offline data scripts (Python, UnityPy)
+  docs/research/, docs/images/
+  src/Forewarned/
+    Plugin.cs, PluginConfig.cs, ConfigurationManagerAttributes.cs
+    Core/Model/         AbilitySpec, Shape, Geometry, AreaTest, Relevance, Tracker, WarningBoard,
+                        Announcer, BossModule, ModuleRegistry, Translations, TextCheck
+    Core/Model/Bosses/  FaderModule, ModerModule (then the other six)
+    Core/               Runtime, BossWatch, LiveData, ForewarnedConsole, DemoSequence
+    Patches/            AnimTriggerPatch, AnimHitPatch
+    UI/                 WarningHud, AnnounceHud, EdgeFlash, GroundMarker, PathArrow, AlertSounds, Sprites, UiUtil
+    translations/English.txt   (embedded)
+  tests/Forewarned.Tests/      net8.0 xUnit, compiles Core/Model by link
+```
+
+- **Tests** (pure model, offline research numbers as fixtures): area tests per shape with edges and
+  margins; the targeted rule; safe directions; board stacking, eviction and timing (hit + 0.5 s,
+  minimum, fade, a real hit moving the end); sound gating; announce limits; health gates and phase
+  crossings in both directions without repeats when health jitters; the tracker's wind-up learning
+  with outliers; registry lookups with suffixed triggers and the ignore list; every module's keys
+  present in `English.txt`.
+- **Build** as Earshot (net472, publicizer, `lib/` from the rig,
+  `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1`).
+- **Dev loop**: `deploy.sh`, `logs.sh`, `shot.sh`, `crop.sh`, `package.sh`, `publish.sh` adapted
+  from Earshot. In game: devcommands (`spawn Fader`, `god`, `ghost`) and the `forewarned` console
+  command.
+- **Milestone 1 build order**: scaffold → model with tests → trigger and hit capture with the
+  console, checked on the rig through the log only → special warning, bar and announces → sounds
+  and flash → ground markers and arrow → Fader and Moder walk-through against the definition of
+  done (§9), with screenshots.
