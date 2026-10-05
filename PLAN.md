@@ -412,6 +412,7 @@ Agreed so far:
   7. Probes settled: the boss health bar's screen rect; offline vs live wind-up.
 - **Progress:** milestone 1 plan 1 (scaffold and pure model, `docs/superpowers/plans/2026-10-05-m1-plan1-scaffold-and-model.md`) is done: 106 model tests green. Next: plan 2 (game-side capture, live data, config, console).
 - **Progress:** milestone 1 plan 2 (game-side capture, live data, config, console, Eikthyr module) is done and deployed; in-game checks happen in the first Eikthyr session after plan 3.
+- **Progress:** milestone 1 plan 3 (HUD, sounds, ground markers, path arrow, test/demo) is done and deployed for the first Eikthyr session. Still open for the definition of done: in-game checks (#3 timing, #4 sightings and screenshots, #5 live F1 toggles, #7 probes) and Fader/Moder sessions.
 
 All brainstorm decisions are settled (2026-10-05). The ability table is §10 and the design §11.
 
