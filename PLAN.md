@@ -334,6 +334,10 @@ Agreed so far:
     landing.
 
   Each ability has a default level that can be changed in F1.
+- **Layout (2026-10-05): DBM classic.** The special warning sits just above the crosshair with its
+  countdown bar directly under it; announce lines sit under the boss health bar. This keeps clear
+  of the crosshair, the character, vanilla's centre message (MessageHud) and Earshot's
+  bottom-centre captions. Every element has position and scale options in F1.
 
 Open, to settle in the brainstorm before any design is written:
 - Warning types and their look: special warning, announce, countdown bar, ground marker, arrow,
