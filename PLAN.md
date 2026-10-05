@@ -391,6 +391,9 @@ Agreed so far:
   Milestone 2: the other six bosses (with Kall's aspects), solo. Then multiplayer. Nothing is
   released until every boss works solo: that is **0.1.0** on Thunderstore; **0.2.0** adds
   multiplayer.
+- **Eikthyr joins milestone 1 (2026-10-05, user request).** He is the first boss tested in game
+  (cheap to spawn, three attacks, a silent 2.9 s stomp wind-up), so his module is built with plan 2
+  and the first rig build is tested on him before Fader and Moder.
 - **Milestone 1 is done when:**
   1. Fader and Moder modules cover every ability at the §10 defaults, including Fader's
      85/55/35/25% phase announces and Moder's takeoff and landing announces.
