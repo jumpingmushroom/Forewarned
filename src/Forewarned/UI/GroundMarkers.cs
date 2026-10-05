@@ -28,10 +28,12 @@ namespace Forewarned.UI
 
         private static GroundMarkers _instance;
         private static Material _material;
+        private static bool _shaderMissing;
         private static int _solidMask = -1;
 
         private readonly Marker[] _markers = new Marker[WarningBoard.Slots];
         private GameObject _arrow;
+        private Mesh _arrowMesh;
         private readonly List<Vector3> _verts = new List<Vector3>();
         private readonly List<Color> _colors = new List<Color>();
         private readonly List<int> _tris = new List<int>();
@@ -39,13 +41,14 @@ namespace Forewarned.UI
 
         public static void Ensure()
         {
-            if (_instance != null || Player.m_localPlayer == null)
+            if (_instance != null || Player.m_localPlayer == null || _shaderMissing)
                 return;
             if (_material == null)
             {
                 Shader shader = Shader.Find("Sprites/Default");
                 if (shader == null)
                 {
+                    _shaderMissing = true;
                     ForewarnedPlugin.WarnOnce("GroundMarkers", new InvalidOperationException("shader Sprites/Default not found; ground markers off"));
                     return;
                 }
@@ -67,9 +70,14 @@ namespace Forewarned.UI
         {
             var m = new Marker { Root = new GameObject("Marker" + i) };
             m.Root.transform.SetParent(transform, false);
+            // LineRenderer defaults to camera-facing alignment; pin it flat to the ground instead
+            // (positions stay world-space via useWorldSpace, so the root's rotation only affects
+            // the line's local axes, not where its points sit).
+            m.Root.transform.rotation = Quaternion.LookRotation(Vector3.up, Vector3.forward);
             m.Line = m.Root.AddComponent<LineRenderer>();
             m.Line.useWorldSpace = true;
             m.Line.loop = true;
+            m.Line.alignment = LineAlignment.TransformZ;
             m.Line.sharedMaterial = _material;
             m.Line.shadowCastingMode = ShadowCastingMode.Off;
             m.Line.receiveShadows = false;
@@ -102,11 +110,13 @@ namespace Forewarned.UI
             mesh.SetColors(c);
             mesh.SetTriangles(t, 0);
             mesh.RecalculateBounds();
+            _arrowMesh = mesh;
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
             var r = go.AddComponent<MeshRenderer>();
             r.sharedMaterial = _material;
             r.shadowCastingMode = ShadowCastingMode.Off;
             r.receiveShadows = false;
+            r.sortingOrder = 1; // above the translucent area fills
             go.SetActive(false);
             return go;
         }
@@ -125,6 +135,15 @@ namespace Forewarned.UI
             for (int i = 0; i < 7; i++)
                 c.Add(col);
             t.AddRange(new[] { b, b + 3, b + 2, b, b + 2, b + 1, b + 4, b + 6, b + 5 });
+        }
+
+        private void OnDestroy()
+        {
+            foreach (Marker m in _markers)
+                if (m != null && m.Mesh != null)
+                    Destroy(m.Mesh);
+            if (_arrowMesh != null)
+                Destroy(_arrowMesh);
         }
 
         private void LateUpdate()
@@ -266,7 +285,7 @@ namespace Forewarned.UI
             if (_solidMask < 0)
                 _solidMask = LayerMask.GetMask("Default", "static_solid", "Default_small", "piece", "terrain");
             RaycastHit hit;
-            if (Physics.Raycast(new Vector3(x, refY + 4f, z), Vector3.down, out hit, 30f, _solidMask))
+            if (Physics.Raycast(new Vector3(x, refY + 4f, z), Vector3.down, out hit, 30f, _solidMask, QueryTriggerInteraction.Ignore))
                 return hit.point.y;
             return refY;
         }
