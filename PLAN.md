@@ -362,9 +362,15 @@ Agreed so far:
   default). Per-ability sound toggles, a test button per level in F1, and the same ability never
   replays its sound within 1 s.
 - **Abilities, levels and wording (2026-10-05): as proposed; full table in §10.**
+- **F1 layout (2026-10-05): a section per boss, plain rows.** Sections in game order: `00 General`
+  (master switch, warn only during a boss fight, debug log of unmapped triggers), `01 Display`
+  (positions, scale, durations, edge flash; colours as advanced), `02 Sounds` (volume, a test
+  button per level), then `03 Eikthyr` … `10 Kall Fimbulbringer`. Each boss section starts with an
+  `Enabled` switch, then three rows per ability kept together with `Order`
+  (`Flame breath: warning` / `: sound` / `: visual`). The level and the always-warn override are
+  advanced rows. Plain entries work in F1, r2modman's config editor and a hand-edited `.cfg`.
 
 Open, to settle in the brainstorm before any design is written:
-- Defaults, and the per-boss and per-ability option layout in F1.
 - How modules leave room for timers and prediction.
 - Accessibility: working alongside Earshot (colour-blind safety settled with the colours).
 - The first milestone's boss list and its definition of done.
