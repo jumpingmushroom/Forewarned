@@ -16,6 +16,8 @@ namespace Forewarned.UI
         private static AudioClip _horn;
         private static AudioClip _chime;
         private static bool _hooked;
+        private static int _attempts;
+        private static bool _gaveUp;
 
         public static void Ensure()
         {
@@ -34,6 +36,8 @@ namespace Forewarned.UI
                 _source.playOnAwake = false;
                 _source.spatialBlend = 0f;
             }
+            if (_gaveUp)
+                return;
             try
             {
                 _horn = _horn ?? Horn();
@@ -42,6 +46,12 @@ namespace Forewarned.UI
             catch (Exception e)
             {
                 ForewarnedPlugin.WarnOnce("AlertSounds", e);
+                _attempts++;
+                if (_attempts >= 3)
+                {
+                    _gaveUp = true;
+                    ForewarnedPlugin.Log.LogWarning("Forewarned: alert sounds disabled after 3 failed attempts");
+                }
             }
         }
 
