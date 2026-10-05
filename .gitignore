@@ -37,3 +37,6 @@ build/deploy.sh
 build/logs.sh
 build/shot.sh
 build/crop.sh
+
+# Brainstorm companion mockups
+.superpowers/
