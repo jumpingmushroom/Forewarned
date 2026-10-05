@@ -45,6 +45,8 @@ namespace Forewarned.Core
             Engine.Tick(now);
             WarningHud.Ensure();
             AnnounceHud.Ensure();
+            EdgeFlash.Ensure();
+            AlertSounds.Ensure();
         }
 
         public static void Debug(string line)
