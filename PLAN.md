@@ -355,11 +355,14 @@ Agreed so far:
   white arrow from the player's feet shows the way out. Both clear when the hit lands. Lingering
   hazards (burning ground, fissure pools, poison cloud) are not outlined. This is the per-ability
   "visual" toggle, on by default for Danger only.
+- **Alert sounds (2026-10-05): our own, synthesised in code at startup.** Danger: a short low horn
+  blast (~0.4 s). Caution: a soft two-note chime. Info: silent. No audio files, no licensing.
+  Default volume 0.7 with its own F1 slider, scaled by the game's master volume but not the SFX
+  slider. Sound is on by default for Danger and Caution (Caution warnings themselves are off by
+  default). Per-ability sound toggles, a test button per level in F1, and the same ability never
+  replays its sound within 1 s.
 
 Open, to settle in the brainstorm before any design is written:
-- Warning types and their look: special warning, announce, countdown bar, ground marker, arrow,
-  screen flash. Layout, size, colours, durations, stacking.
-- Alert sounds: whether, which, default volume.
 - Which abilities warn, their urgency, and the exact wording.
 - Defaults, and the per-boss and per-ability option layout in F1.
 - How modules leave room for timers and prediction.
