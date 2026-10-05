@@ -30,11 +30,13 @@ namespace Forewarned.Core
                 {
                     Engine.Board.Clear();
                     Engine.Announcer.Clear();
+                    DemoSequence.Clear();
                 }
                 else if (_hadPlayer)
                 {
                     Engine.Clear();
                     BossWatch.Clear();
+                    DemoSequence.Clear();
                     _hadPlayer = false;
                 }
                 return;
@@ -43,6 +45,7 @@ namespace Forewarned.Core
             float now = Time.time;
             BossWatch.Tick(now);
             Engine.Tick(now);
+            DemoSequence.Tick(now);
             WarningHud.Ensure();
             AnnounceHud.Ensure();
             EdgeFlash.Ensure();

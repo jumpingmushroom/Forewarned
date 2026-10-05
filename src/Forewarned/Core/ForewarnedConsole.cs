@@ -11,18 +11,34 @@ namespace Forewarned.Core
     {
         public static void Register()
         {
-            new Terminal.ConsoleCommand("forewarned", "Forewarned: tracked bosses, recent boss triggers and attack numbers",
+            new Terminal.ConsoleCommand("forewarned", "Forewarned: tracked bosses and recent triggers (test danger|caution|info: sample warning; demo: sample sequence)",
                 delegate (Terminal.ConsoleEventArgs args)
                 {
                     try
                     {
-                        Report(args.Context);
+                        string sub = args.Length > 1 ? args[1].ToLowerInvariant() : "";
+                        if (sub == "test")
+                            Test(args.Context, args.Length > 2 ? args[2].ToLowerInvariant() : "danger");
+                        else if (sub == "demo")
+                        {
+                            DemoSequence.Start();
+                            Say(args.Context, "Forewarned: playing a 13-second sample sequence in front of you.");
+                        }
+                        else
+                            Report(args.Context);
                     }
                     catch (Exception e)
                     {
                         ForewarnedPlugin.WarnOnce("forewarned console", e);
                     }
                 });
+        }
+
+        private static void Test(Terminal ctx, string level)
+        {
+            Level l = level == "caution" ? Level.Caution : level == "info" ? Level.Info : Level.Danger;
+            DemoSequence.Test(l);
+            Say(ctx, "Forewarned: showing a sample " + l + " warning.");
         }
 
         private static void Say(Terminal ctx, string line)

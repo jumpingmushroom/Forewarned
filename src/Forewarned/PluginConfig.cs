@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using BepInEx.Configuration;
+using Forewarned.Core;
 using Forewarned.Core.Model;
 using UnityEngine;
 
@@ -92,6 +93,12 @@ namespace Forewarned
 
             Volume = cfg.Bind("02 Sounds", "Volume", 0.7f,
                 new ConfigDescription("Alert volume (0 to 1), scaled by the game's master volume but not its effects slider.", new AcceptableValueRange<float>(0f, 1f), Attr(100)));
+            cfg.Bind("02 Sounds", "Test Danger", "",
+                new ConfigDescription("Show a sample Danger warning with its horn and flash.", null,
+                    new ConfigurationManagerAttributes { Order = 90, HideDefaultButton = true, CustomDrawer = e => TestButton(Level.Danger) }));
+            cfg.Bind("02 Sounds", "Test Caution", "",
+                new ConfigDescription("Show a sample Caution warning with its chime.", null,
+                    new ConfigurationManagerAttributes { Order = 89, HideDefaultButton = true, CustomDrawer = e => TestButton(Level.Caution) }));
 
             foreach (BossModule m in modules)
                 BindBoss(cfg, m);
@@ -171,6 +178,12 @@ namespace Forewarned
         {
             AbilityRows r;
             return Abilities.TryGetValue(a, out r) && r.AlwaysWarn.Value;
+        }
+
+        private static void TestButton(Level level)
+        {
+            if (GUILayout.Button("Show", GUILayout.ExpandWidth(true)))
+                DemoSequence.Test(level);
         }
 
         private static Color Hex(string hex)
