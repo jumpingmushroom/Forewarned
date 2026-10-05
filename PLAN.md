@@ -383,9 +383,27 @@ Agreed so far:
   Forewarned has turned into warnings. A later, optional duplicate-suppression check (found by
   plugin GUID, no hard dependency) is to be reconsidered after multiplayer, once both have been
   seen in a real fight.
+- **Milestones and release (2026-10-05).** Milestone 1: Fader and Moder end to end, solo.
+  Milestone 2: the other six bosses (with Kall's aspects), solo. Then multiplayer. Nothing is
+  released until every boss works solo: that is **0.1.0** on Thunderstore; **0.2.0** adds
+  multiplayer.
+- **Milestone 1 is done when:**
+  1. Fader and Moder modules cover every ability at the §10 defaults, including Fader's
+     85/55/35/25% phase announces and Moder's takeoff and landing announces.
+  2. Live numbers (cooldowns, gates, ranges, shapes from the items; wind-ups from the clips) are
+     printed by the `forewarned` console command next to the offline values, and match or the
+     difference is explained.
+  3. For every Danger ability the log shows trigger → hit, and the countdown bar reaches zero
+     within ±0.2 s of the real hit.
+  4. On the rig, solo, bosses spawned with devcommands: each Danger ability seen at least once
+     with warning, sound, ground outline and arrow, captured with `shot.sh`; Caution and Info seen
+     at least once each; stacking seen once.
+  5. F1 toggles for both bosses apply live; each level's test button plays its sound.
+  6. The pure model (tracker, area tests, stacking, timing, health gates, trigger map) is
+     unit-tested and green.
+  7. Probes settled: the boss health bar's screen rect; offline vs live wind-up.
 
-Open, to settle in the brainstorm before any design is written:
-- The first milestone's boss list and its definition of done.
+All brainstorm decisions are settled (2026-10-05). The design follows in §11.
 
 ## 10. Ability defaults and wording (agreed 2026-10-05)
 
