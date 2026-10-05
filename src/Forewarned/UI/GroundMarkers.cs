@@ -71,8 +71,11 @@ namespace Forewarned.UI
             var m = new Marker { Root = new GameObject("Marker" + i) };
             m.Root.transform.SetParent(transform, false);
             // LineRenderer defaults to camera-facing alignment; pin it flat to the ground instead
-            // (positions stay world-space via useWorldSpace, so the root's rotation only affects
-            // the line's local axes, not where its points sit).
+            // (positions stay world-space via useWorldSpace, so this rotation only affects the
+            // LineRenderer's TransformZ alignment, not where its points sit). The fill mesh below
+            // also uses world-space vertices, so FillObject is parented to the unrotated
+            // GroundMarkers transform instead of this rotated root, or its triangles would come
+            // out scrambled (axes swapped) under Root's rotation.
             m.Root.transform.rotation = Quaternion.LookRotation(Vector3.up, Vector3.forward);
             m.Line = m.Root.AddComponent<LineRenderer>();
             m.Line.useWorldSpace = true;
@@ -83,7 +86,7 @@ namespace Forewarned.UI
             m.Line.receiveShadows = false;
             m.Line.numCornerVertices = 2;
             m.FillObject = new GameObject("Fill");
-            m.FillObject.transform.SetParent(m.Root.transform, false);
+            m.FillObject.transform.SetParent(transform, false);
             m.Mesh = new Mesh();
             m.Mesh.MarkDynamic();
             m.FillObject.AddComponent<MeshFilter>().sharedMesh = m.Mesh;
@@ -92,6 +95,7 @@ namespace Forewarned.UI
             r.shadowCastingMode = ShadowCastingMode.Off;
             r.receiveShadows = false;
             m.Root.SetActive(false);
+            m.FillObject.SetActive(false);
             return m;
         }
 
@@ -192,8 +196,12 @@ namespace Forewarned.UI
                 }
             }
             for (int i = used; i < _markers.Length; i++)
+            {
                 if (_markers[i].Root.activeSelf)
                     _markers[i].Root.SetActive(false);
+                if (_markers[i].FillObject.activeSelf)
+                    _markers[i].FillObject.SetActive(false);
+            }
             if (!arrowShown && _arrow.activeSelf)
                 _arrow.SetActive(false);
         }
@@ -293,8 +301,13 @@ namespace Forewarned.UI
         private void HideAll()
         {
             foreach (Marker m in _markers)
-                if (m != null && m.Root.activeSelf)
-                    m.Root.SetActive(false);
+                if (m != null)
+                {
+                    if (m.Root.activeSelf)
+                        m.Root.SetActive(false);
+                    if (m.FillObject.activeSelf)
+                        m.FillObject.SetActive(false);
+                }
             if (_arrow != null && _arrow.activeSelf)
                 _arrow.SetActive(false);
         }
