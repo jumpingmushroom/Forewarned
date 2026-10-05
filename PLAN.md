@@ -325,6 +325,15 @@ Agreed so far:
   roots) count as aimed at you if you're within their range and the boss faces you, or you're the
   only player in range. Each ability has an "always warn" option that skips the test. Solo, you're
   always the target, so the facing guess matters only in multiplayer.
+- **Urgency (2026-10-05): three levels, named by severity.**
+  - **Danger:** special warning, alarm sound, screen-edge flash. Default for positional and
+    unblockable attacks (fissure, flame breath, poison cloud, nova, stomp, spike rain…).
+  - **Caution:** a smaller special warning, a soft sound, no flash. Default for routine melee
+    (bites, claws, slaps, slams), with the warning **off** by default.
+  - **Info:** an announce line, no sound. Default for adds, phase changes, teleport, takeoff and
+    landing.
+
+  Each ability has a default level that can be changed in F1.
 
 Open, to settle in the brainstorm before any design is written:
 - Warning types and their look: special warning, announce, countdown bar, ground marker, arrow,
