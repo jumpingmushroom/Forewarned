@@ -46,6 +46,12 @@ namespace Forewarned.Core
             return c != null && Tracked.TryGetValue(c.GetInstanceID(), out t) ? t : null;
         }
 
+        public static TrackedBoss FindById(long id)
+        {
+            TrackedBoss t;
+            return id >= int.MinValue && id <= int.MaxValue && Tracked.TryGetValue((int)id, out t) ? t : null;
+        }
+
         /// <summary>Like <see cref="Find"/>, but starts tracking an untracked boss on its first attack
         /// trigger instead of waiting for the next scan (PLAN.md §9: an Eikthyr can wake, alert and
         /// attack in one AI tick, before <see cref="Tick"/> has seen it).</summary>

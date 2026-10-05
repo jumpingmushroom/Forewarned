@@ -47,6 +47,7 @@ namespace Forewarned.Core
             AnnounceHud.Ensure();
             EdgeFlash.Ensure();
             AlertSounds.Ensure();
+            GroundMarkers.Ensure();
         }
 
         public static void Debug(string line)
