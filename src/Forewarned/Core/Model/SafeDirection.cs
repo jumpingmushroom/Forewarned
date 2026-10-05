@@ -10,9 +10,14 @@ namespace Forewarned.Core.Model
         /// <returns>A unit direction for the player to move in, or Vec2.Zero when there is no useful arrow.</returns>
         public static Vec2 Toward(Response r, Shape s, Vec2 bossPos, Vec2 facing, Vec2 origin, Vec2 me)
         {
+            facing = facing.Normalized;
             switch (r)
             {
                 case Response.GetBehind:
+                    // Heading straight for the point behind the boss can route through the attack
+                    // itself (Fader's flame breath line); step out of it sideways first instead.
+                    if (AreaTest.Classify(s, origin, facing, me) != Verdict.Outside)
+                        goto case Response.LeaveLine;
                     return (bossPos - facing * BehindDistance - me).Normalized;
                 case Response.LeaveArea:
                 {

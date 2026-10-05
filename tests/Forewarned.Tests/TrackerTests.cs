@@ -70,6 +70,15 @@ namespace Forewarned.Tests
         }
 
         [Fact]
+        public void CancelDropsThePendingTriggerSoALaterHitFindsNothing()
+        {
+            var t = new Tracker();
+            t.OnTrigger(1, Fader, Breath, "fader.flamebreath", 10f);
+            t.Cancel(1);
+            Assert.Null(t.OnHit(1, 12f));
+        }
+
+        [Fact]
         public void BossesAreTrackedSeparately()
         {
             var t = new Tracker();

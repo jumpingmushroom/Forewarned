@@ -15,10 +15,26 @@ namespace Forewarned.Tests
         }
 
         [Fact]
-        public void GetBehindHeadsForThePointBehindTheBoss()
+        public void GetBehindInsideTheAttackStepsSidewaysInstead()
         {
             Vec2 me = new Vec2(0f, 10f);
-            Near(new Vec2(0f, -1f), SafeDirection.Toward(Response.GetBehind, Shape.Line(39f, 3f), Boss, North, Boss, me));
+            Near(new Vec2(-1f, 0f), SafeDirection.Toward(Response.GetBehind, Shape.Line(39f, 3f), Boss, North, Boss, me));
+        }
+
+        [Fact]
+        public void GetBehindOutsideTheAttackHeadsForThePointBehindTheBoss()
+        {
+            Vec2 me = new Vec2(10f, 10f);
+            Near((new Vec2(0f, -4f) - me).Normalized, SafeDirection.Toward(Response.GetBehind, Shape.Line(39f, 3f), Boss, North, Boss, me));
+        }
+
+        [Fact]
+        public void GetBehindNormalisesAnUnnormalisedFacing()
+        {
+            Vec2 me = new Vec2(10f, 10f);
+            Vec2 normal = SafeDirection.Toward(Response.GetBehind, Shape.Line(39f, 3f), Boss, North, Boss, me);
+            Vec2 scaled = SafeDirection.Toward(Response.GetBehind, Shape.Line(39f, 3f), Boss, new Vec2(0f, 0.5f), Boss, me);
+            Near(normal, scaled);
         }
 
         [Fact]

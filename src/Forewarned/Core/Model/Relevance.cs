@@ -50,8 +50,9 @@ namespace Forewarned.Core.Model
             origin = s.BossPos;
             if (shape.Kind == ShapeKind.None)
                 return Vec2.Distance(s.BossPos, s.Me) <= aiRange + AreaTest.Margin ? Verdict.Inside : Verdict.Outside;
+            Vec2 facing = s.BossFacing.Normalized;
             if (shape.Anchor == Anchor.Boss)
-                return AreaTest.Classify(shape, s.BossPos, s.BossFacing, s.Me);
+                return AreaTest.Classify(shape, s.BossPos, facing, s.Me);
             Vec2? aim = AimPoint(s, aiRange);
             if (aim == null)
             {
@@ -59,7 +60,7 @@ namespace Forewarned.Core.Model
                 return Verdict.Outside;
             }
             origin = aim.Value;
-            return AreaTest.Classify(shape, origin, s.BossFacing, s.Me);
+            return AreaTest.Classify(shape, origin, facing, s.Me);
         }
 
         /// <summary>Inside or near: the special warning. Outside: an announce for Danger, nothing for Caution.

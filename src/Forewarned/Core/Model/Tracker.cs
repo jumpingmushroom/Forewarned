@@ -35,6 +35,10 @@ namespace Forewarned.Core.Model
             _lastUse[UseKey(bossId, abilityId)] = time;
         }
 
+        /// <summary>The boss's pending trigger won't hit (an abort, stagger or unknown attack followed it):
+        /// drop it so the next hit doesn't wrongly pair with it.</summary>
+        public void Cancel(long bossId) => _pending.Remove(bossId);
+
         public string OnHit(long bossId, float time)
         {
             Pending p;

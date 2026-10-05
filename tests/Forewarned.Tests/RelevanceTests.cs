@@ -42,6 +42,16 @@ namespace Forewarned.Tests
         }
 
         [Fact]
+        public void AnUnnormalisedFacingIsTreatedAsAUnitVector()
+        {
+            Vec2 origin;
+            var s = Solo(0f, 50f);
+            s.BossFacing = new Vec2(0f, 0.5f);
+            // Unnormalised, "along" would be 25 m (half of 50 / 0.5) and wrongly Inside the 39 m line.
+            Assert.Equal(Verdict.Outside, Relevance.Judge(Shape.Line(39f, 3f), 20f, s, out origin));
+        }
+
+        [Fact]
         public void AShapelessAttackReachesEveryoneInItsRange()
         {
             Vec2 origin;

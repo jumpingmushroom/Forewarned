@@ -39,6 +39,7 @@ namespace Forewarned.Core.Model
         private readonly Func<string, string> _localize;
         private readonly IAbilitySettings _settings;
         private readonly List<TriggerRecord> _recent = new List<TriggerRecord>();
+        private readonly Dictionary<string, AbilityNumbers> _live = new Dictionary<string, AbilityNumbers>(StringComparer.Ordinal);
 
         /// <param name="localize">Turns a game token ("$enemy_fader") into the player's language.</param>
         public Engine(ModuleRegistry registry, Translations tr, Func<string, string> localize, IAbilitySettings settings)
@@ -52,7 +53,18 @@ namespace Forewarned.Core.Model
         /// <summary>Newest first.</summary>
         public IReadOnlyList<TriggerRecord> Recent => _recent;
 
-        public TriggerKind OnTrigger(TriggerEvent e, Scene scene, AbilityNumbers live, bool fightActive)
+        /// <summary>Live numbers read from the boss's own item in game, for warnings that use that ability
+        /// next. Null clears them, so the spec's offline numbers are used again.</summary>
+        public void SetLiveNumbers(string prefab, string abilityId, AbilityNumbers numbers) =>
+            _live[LiveKey(prefab, abilityId)] = numbers;
+
+        public AbilityNumbers LiveNumbers(string prefab, string abilityId)
+        {
+            AbilityNumbers numbers;
+            return _live.TryGetValue(LiveKey(prefab, abilityId), out numbers) ? numbers : null;
+        }
+
+        public TriggerKind OnTrigger(TriggerEvent e, Scene scene, bool fightActive)
         {
             AbilitySpec spec;
             TriggerKind kind = Registry.Classify(e.Prefab, e.Trigger, out spec);
@@ -60,11 +72,15 @@ namespace Forewarned.Core.Model
                 return kind;
             if (kind != TriggerKind.Mapped)
             {
-                Record(e, kind == TriggerKind.Ignored ? "ignored" : "unmapped");
+                // An abort, stagger or unknown attack means the previous trigger's hit won't come.
+                Tracker.Cancel(e.BossId);
+                // Ignored triggers are routine noise (dodge, equip, ...); only Unmapped is worth a look.
+                if (kind == TriggerKind.Unmapped)
+                    Record(e, "unmapped");
                 return kind;
             }
             Tracker.OnTrigger(e.BossId, e.Prefab, e.Trigger, spec.Id, e.Time);
-            Record(e, Warn(e, Registry.ModuleFor(e.Prefab), spec, scene, live, fightActive));
+            Record(e, Warn(e, Registry.ModuleFor(e.Prefab), spec, scene, LiveNumbers(e.Prefab, spec.Id), fightActive));
             return kind;
         }
 
@@ -80,7 +96,7 @@ namespace Forewarned.Core.Model
             if (!_settings.Warn(spec))
                 return "off";
 
-            ResolvedAbility a = ResolvedAbility.Resolve(spec, live, Tracker.LearnedWindUp(e.Prefab, e.Trigger));
+            ResolvedAbility a = ResolvedAbility.Resolve(spec, live, LearnedWindUp(e.Prefab, e.Trigger, spec));
             Vec2 origin;
             Verdict verdict = Relevance.Judge(a.Shape, a.AiRange, scene, out origin);
             Outcome outcome = Relevance.Decide(level, verdict, _settings.AlwaysWarn(spec));
@@ -91,7 +107,10 @@ namespace Forewarned.Core.Model
                 return "nothing, " + where;
             if (outcome == Outcome.Announce)
             {
-                string text = level == Level.Info
+                // The action text names no ability ("Get behind Fader"); only show it for abilities
+                // that are Info by design. One the player raised to Info in settings needs the
+                // ability's name too, so it gets the "{boss}: {what}" line instead.
+                string text = spec.DefaultLevel == Level.Info
                     ? Fill(_tr.Get(spec.ActionKey), boss, null, a.Shape.SafeMetres)
                     : Fill(_tr.Get("announce.elsewhere"), boss, AbilityName(spec), 0);
                 Announcer.Add(spec.Id, text, e.Time);
@@ -114,6 +133,16 @@ namespace Forewarned.Core.Model
                 Origin = origin
             };
             return "special " + Board.Offer(w, e.Time).ToString().ToLowerInvariant() + ", " + where;
+        }
+
+        /// <summary>The learned wind-up, trusted only once it has at least two samples and sits within
+        /// ±50% of the spec's offline figure; otherwise null, so ResolvedAbility falls back to it.</summary>
+        private float? LearnedWindUp(string prefab, string trigger, AbilitySpec spec)
+        {
+            float? learned = Tracker.LearnedWindUp(prefab, trigger);
+            if (learned == null || Tracker.SampleCount(prefab, trigger) < 2)
+                return null;
+            return Math.Abs(learned.Value - spec.WindUp) <= spec.WindUp * 0.5f ? learned : null;
         }
 
         public void OnHit(long bossId, float time)
@@ -144,8 +173,11 @@ namespace Forewarned.Core.Model
                 Announcer.Add(key, Fill(_tr.Get(key), BossName(m), null, 0), now);
         }
 
-        public void OnPull(string prefab, float now)
+        public void OnPull(long bossId, string prefab, float now)
         {
+            // A fresh pull is a fresh fight: a boss that wipes the group and heals back to full
+            // should announce its thresholds again on the way back down.
+            Phases.Forget(bossId);
             BossModule m = Registry.ModuleFor(prefab);
             if (m != null && AnnouncesFor(m))
                 Announcer.Add("pull." + m.Key, Fill(_tr.Get("announce.pull"), BossName(m), null, 0), now);
@@ -170,6 +202,7 @@ namespace Forewarned.Core.Model
             Announcer.Clear();
             Phases.Clear();
             _recent.Clear();
+            _live.Clear();
         }
 
         /// <summary>The boss's name in the player's language, or the module's English name if the game has none.</summary>
@@ -196,6 +229,8 @@ namespace Forewarned.Core.Model
                 .Replace("{what}", what ?? "")
                 .Replace("{m}", metres.ToString(CultureInfo.InvariantCulture));
         }
+
+        private static string LiveKey(string prefab, string abilityId) => prefab + "\n" + abilityId;
 
         private void Record(TriggerEvent e, string outcome)
         {
