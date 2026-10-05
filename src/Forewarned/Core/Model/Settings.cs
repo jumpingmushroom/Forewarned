@@ -1,7 +1,7 @@
 namespace Forewarned.Core.Model
 {
-    /// <summary>The player's choices, as the model sees them. The plugin implements this over its
-    /// BepInEx config (plan 2); tests use DefaultSettings.</summary>
+    /// <summary>The player's choices, as the model sees them. The plugin implements this from config
+    /// (plan 2); tests use DefaultSettings.</summary>
     public interface IAbilitySettings
     {
         bool Enabled { get; }
