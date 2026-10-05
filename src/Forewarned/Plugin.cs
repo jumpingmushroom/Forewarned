@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Logging;
+using Forewarned.Core;
 using Forewarned.Core.Model.Bosses;
 using HarmonyLib;
 
@@ -38,6 +39,18 @@ namespace Forewarned
         {
             if (_harmony != null)
                 _harmony.UnpatchSelf();
+        }
+
+        private void Update()
+        {
+            try
+            {
+                Runtime.Tick();
+            }
+            catch (Exception e)
+            {
+                WarnOnce("Runtime.Tick", e);
+            }
         }
 
         /// <summary>Log an exception once per key, so a broken hook can't flood the log every frame.</summary>

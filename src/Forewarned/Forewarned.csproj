@@ -22,6 +22,7 @@
 
     <Reference Include="UnityEngine"                     HintPath="$(ValheimManaged)/UnityEngine.dll" Private="false" />
     <Reference Include="UnityEngine.CoreModule"          HintPath="$(ValheimManaged)/UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.AnimationModule"     HintPath="$(ValheimManaged)/UnityEngine.AnimationModule.dll" Private="false" />
     <Reference Include="UnityEngine.AudioModule"         HintPath="$(ValheimManaged)/UnityEngine.AudioModule.dll" Private="false" />
     <Reference Include="UnityEngine.PhysicsModule"       HintPath="$(ValheimManaged)/UnityEngine.PhysicsModule.dll" Private="false" />
     <Reference Include="UnityEngine.UI"                  HintPath="$(ValheimManaged)/UnityEngine.UI.dll" Private="false" />
