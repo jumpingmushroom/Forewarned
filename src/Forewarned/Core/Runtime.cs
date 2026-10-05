@@ -3,6 +3,7 @@ using System.Reflection;
 using BepInEx;
 using Forewarned.Core.Model;
 using Forewarned.Core.Model.Bosses;
+using Forewarned.UI;
 using UnityEngine;
 
 namespace Forewarned.Core
@@ -42,6 +43,8 @@ namespace Forewarned.Core
             float now = Time.time;
             BossWatch.Tick(now);
             Engine.Tick(now);
+            WarningHud.Ensure();
+            AnnounceHud.Ensure();
         }
 
         public static void Debug(string line)
