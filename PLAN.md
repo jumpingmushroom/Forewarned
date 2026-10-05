@@ -313,9 +313,13 @@ Agreed so far:
 - **Name:** Forewarned (2026-10-05).
 - **Rig:** the same SSH target and r2modman Default profile as Earshot, kept in gitignored
   scripts and written as `<rig>` in tracked files.
+- **Signal (2026-10-05): the animator trigger.** A Harmony postfix on
+  `ZSyncAnimation.RPC_SetTrigger(long, string)` drives every warning, keyed on (boss prefab,
+  trigger name). The same code runs solo and in multiplayer and fires at the start of the wind-up.
+  Modules also claim Kall's phase-2 aspect prefabs. No sound hook and no `StartAttack` hook. A debug
+  option logs triggers seen on bosses that no module maps, to catch renamed animations.
 
 Open, to settle in the brainstorm before any design is written:
-- Which signal drives warnings, per boss if needed, and the multiplayer path.
 - Warning types and their look: special warning, announce, countdown bar, ground marker, arrow,
   screen flash. Layout, size, colours, durations, stacking.
 - Alert sounds: whether, which, default volume.
