@@ -348,6 +348,13 @@ Agreed so far:
   special-warning lines, newest on top. A Caution never evicts a Danger (a new Caution is dropped
   if both slots hold Danger). The same ability firing again replaces its own line. A Danger
   starts with one 0.4 s screen-edge pulse. Lingering ground hazards are not kept as text.
+- **World visuals (2026-10-05): ground outline plus a path arrow.** During the wind-up the
+  attack's area is outlined on the ground from the decoded data: cone (range, angle), circle
+  (radius, forward offset), line (box), ring (radius around the target). Attacks that land on the
+  player rather than near the boss (meteors, fissure, spike rain) get a circle at the player. A
+  white arrow from the player's feet shows the way out. Both clear when the hit lands. Lingering
+  hazards (burning ground, fissure pools, poison cloud) are not outlined. This is the per-ability
+  "visual" toggle, on by default for Danger only.
 
 Open, to settle in the brainstorm before any design is written:
 - Warning types and their look: special warning, announce, countdown bar, ground marker, arrow,
