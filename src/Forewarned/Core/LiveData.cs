@@ -14,6 +14,9 @@ namespace Forewarned.Core
     internal static class LiveData
     {
         private static readonly HashSet<string> Warned = new HashSet<string>();
+        /// <summary>Prefabs whose live numbers have already been logged this session; the numbers
+        /// themselves are still (re)set in the engine on every call.</summary>
+        private static readonly HashSet<string> Logged = new HashSet<string>();
 
         /// <returns>False while the boss's inventory isn't filled yet, so BossWatch retries on its next scan.</returns>
         public static bool Read(Humanoid boss, string prefab)
@@ -24,7 +27,7 @@ namespace Forewarned.Core
             if (items == null || items.Count == 0)
                 return false;
             BossModule module = Runtime.Engine.Registry.ModuleFor(prefab);
-            var log = new StringBuilder("Forewarned: live numbers for " + prefab + ":");
+            StringBuilder log = Logged.Add(prefab) ? new StringBuilder("Forewarned: live numbers for " + prefab + ":") : null;
             foreach (AbilitySpec a in module.Abilities)
             {
                 ItemDrop.ItemData item = items.Find(i => i.m_dropPrefab != null && i.m_dropPrefab.name == a.ItemPrefab);
@@ -36,15 +39,19 @@ namespace Forewarned.Core
                 }
                 AbilityNumbers n = Numbers(item.m_shared, a);
                 Runtime.Engine.SetLiveNumbers(prefab, a.Id, n);
+                if (log == null)
+                    continue;
                 log.Append(" ").Append(a.Id).Append(" cd ").Append(F(n.Cooldown)).Append(" range ").Append(F(n.AiRange))
-                   .Append(" hp ").Append(F(n.HpMin)).Append("-").Append(F(n.HpMax));
+                   .Append(" maxangle ").Append(F(n.MaxAngle)).Append(" hp ").Append(F(n.HpMin)).Append("-").Append(F(n.HpMax));
                 if (n.Radius.HasValue) log.Append(" r ").Append(F(n.Radius));
                 if (n.Range.HasValue) log.Append(" len ").Append(F(n.Range));
                 if (n.Angle.HasValue) log.Append(" angle ").Append(F(n.Angle));
                 if (n.Width.HasValue) log.Append(" width ").Append(F(n.Width));
+                if (n.Offset.HasValue) log.Append(" offset ").Append(F(n.Offset));
                 log.Append(";");
             }
-            ForewarnedPlugin.Log.LogInfo(log.ToString());
+            if (log != null)
+                ForewarnedPlugin.Log.LogInfo(log.ToString());
             return true;
         }
 

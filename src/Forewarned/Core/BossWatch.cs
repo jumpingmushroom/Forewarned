@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Forewarned.Core.Model;
 using UnityEngine;
@@ -93,24 +94,31 @@ namespace Forewarned.Core
                 if (c == null || c is Player || c.IsDead())
                     continue;
                 int key = c.GetInstanceID();
-                if (NotBosses.Contains(key))
-                    continue;
-                TrackedBoss t;
-                if (!Tracked.TryGetValue(key, out t))
+                try
                 {
-                    if (Vector3.Distance(c.transform.position, me) > TrackRange)
+                    if (NotBosses.Contains(key))
                         continue;
-                    string prefab = Utils.GetPrefabName(c.gameObject);
-                    if (!Runtime.Engine.Registry.Tracks(prefab))
+                    TrackedBoss t;
+                    if (!Tracked.TryGetValue(key, out t))
                     {
-                        NotBosses.Add(key);
-                        continue;
+                        if (Vector3.Distance(c.transform.position, me) > TrackRange)
+                            continue;
+                        string prefab = Utils.GetPrefabName(c.gameObject);
+                        if (!Runtime.Engine.Registry.Tracks(prefab))
+                        {
+                            NotBosses.Add(key);
+                            continue;
+                        }
+                        t = new TrackedBoss { Character = c, Prefab = prefab, Id = key };
+                        Tracked[key] = t;
+                        Runtime.Debug("Forewarned: tracking " + prefab + " (" + key + ")");
                     }
-                    t = new TrackedBoss { Character = c, Prefab = prefab, Id = key };
-                    Tracked[key] = t;
-                    Runtime.Debug("Forewarned: tracking " + prefab + " (" + key + ")");
+                    Update(t, me, now);
                 }
-                Update(t, me, now);
+                catch (Exception e)
+                {
+                    ForewarnedPlugin.WarnOnce("BossWatch " + key, e);
+                }
             }
         }
 

@@ -179,6 +179,12 @@ namespace Forewarned.Core.Model
             // should announce its thresholds again on the way back down.
             Phases.Forget(bossId);
             BossModule m = Registry.ModuleFor(prefab);
+            // Re-seed at the boss's current health: without this, a re-pull that didn't fully heal
+            // (or joining mid-fight) would treat the next health change as the first observation and
+            // silently mark a threshold already below current health as crossed without announcing it.
+            float? hp = Tracker.Health(bossId);
+            if (m != null && hp.HasValue)
+                Phases.Observe(bossId, m.Phases, hp.Value);
             if (m != null && AnnouncesFor(m))
                 Announcer.Add("pull." + m.Key, Fill(_tr.Get("announce.pull"), BossName(m), null, 0), now);
         }

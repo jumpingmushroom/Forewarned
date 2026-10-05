@@ -209,10 +209,23 @@ namespace Forewarned.Tests
             e.OnHealth(7, "Fader", 0.9f, 1f);
             e.OnHealth(7, "Fader", 0.84f, 2f);
             Assert.Equal(2f, Assert.Single(e.Announcer.Lines).Start);
-            e.OnPull(7, "Fader", 10f);
-            e.OnHealth(7, "Fader", 0.9f, 11f);
+            // BossWatch always reads the boss's health for this tick, and calls OnHealth if it
+            // changed, before it calls OnPull: by the time a fresh pull fires, the boss having
+            // healed back to 90% is already reflected in Tracker.Health, same as here.
+            e.OnHealth(7, "Fader", 0.9f, 10f);
+            e.OnPull(7, "Fader", 11f);
             e.OnHealth(7, "Fader", 0.84f, 12f);
             Assert.Equal(12f, e.Announcer.Lines[e.Announcer.Lines.Count - 1].Start);
+        }
+
+        [Fact]
+        public void OnPullReseedsPhasesAtCurrentHealthSoARePullWithoutAFullHealStillAnnouncesTheNextThreshold()
+        {
+            Engine e = Make();
+            e.OnHealth(7, "Fader", 0.9f, 1f);
+            e.OnPull(7, "Fader", 2f);
+            e.OnHealth(7, "Fader", 0.84f, 3f);
+            Assert.Equal("Fader 85%: Fissure and Flame breath", e.Announcer.Lines[e.Announcer.Lines.Count - 1].Text);
         }
 
         [Fact]
