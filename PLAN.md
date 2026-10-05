@@ -361,10 +361,109 @@ Agreed so far:
   slider. Sound is on by default for Danger and Caution (Caution warnings themselves are off by
   default). Per-ability sound toggles, a test button per level in F1, and the same ability never
   replays its sound within 1 s.
+- **Abilities, levels and wording (2026-10-05): as proposed; full table in §10.**
 
 Open, to settle in the brainstorm before any design is written:
-- Which abilities warn, their urgency, and the exact wording.
 - Defaults, and the per-boss and per-ability option layout in F1.
 - How modules leave room for timers and prediction.
 - Accessibility: working alongside Earshot (colour-blind safety settled with the colours).
 - The first milestone's boss list and its definition of done.
+
+## 10. Ability defaults and wording (agreed 2026-10-05)
+
+Title = the attack's plain name in capitals; the action starts with a verb and says where to go;
+a distance only where the safe distance is a fixed number. Every string is a translation key.
+**Danger:** warning, sound and ground outline on. **Caution (off):** defined, off until enabled in
+F1. **Info:** announce line only. **None:** no warning. Wind-up: seconds to the first hit (§4).
+
+**Eikthyr**
+
+| Attack | Level | Wind-up | Warning | Area drawn | Notes |
+|---|---|---|---|---|---|
+| Antler swipe | Caution (off) | 0.60 | **ANTLER** / Block or step aside |  |  |
+| Lightning charge | Danger | 1.56 | **CHARGE** / Sidestep out of the line | cone 20 m × 45° |  |
+| Stomp | Danger | 2.89 | **STOMP** / Run out, 10 m | circle 10 m | No vanilla sound during this 2.9 s wind-up: the warning is the only cue. |
+
+**The Elder**
+
+| Attack | Level | Wind-up | Warning | Area drawn | Notes |
+|---|---|---|---|---|---|
+| Vine volley | Danger | 1.30 | **VINE VOLLEY** / Hide behind a pillar | line to you | Only used at 15–50 m. |
+| Stomp | Caution (off) | 2.00 | **STOMP** / Back away | circle 5 m |  |
+| Roots | Info | 1.46 | announce: "Roots rising: move away" | circle 15 m on you |  |
+| Scream | None | — | — |  | No hit. |
+
+**Bonemass**
+
+| Attack | Level | Wind-up | Warning | Area drawn | Notes |
+|---|---|---|---|---|---|
+| Poison cloud | Danger | 3.30 | **POISON CLOUD** / Get behind Bonemass | circle 9 m in front | Unblockable; lasts 15 s. |
+| Punch | Caution (off) | 1.13 | **PUNCH** / Parry or roll | cone 8.5 m × 66° |  |
+| Throw | Info | 3.11 | announce: "Skeletons and Blobs incoming" |  |  |
+
+**Moder**
+
+| Attack | Level | Wind-up | Warning | Area drawn | Notes |
+|---|---|---|---|---|---|
+| Cold breath | Danger | 1.37 | **COLD BREATH** / Get out of the line | line 30 m | Grounded only. |
+| Ice barrage | Danger | 0.89 | **ICE BARRAGE** / Keep moving | circle on you | Flying only. |
+| Bite | Caution (off) | 0.99 | **BITE** / Block or sidestep | cone 8 m × 20° |  |
+| Claw left / right | Caution (off) | 1.57 | **CLAW** / Parry or step back | cone 12 m × 50° |  |
+| Takes off / lands | Info | — | announce: "Moder takes off · Moder lands" |  | From the networked "flying" state, not a trigger. |
+| Scream | None | — | — |  | No hit. |
+
+**Yagluth**
+
+| Attack | Level | Wind-up | Warning | Area drawn | Notes |
+|---|---|---|---|---|---|
+| Fire beam | Danger | 2.02 | **FIRE BEAM** / Sidestep or hide behind a pillar | line 40 m | Only used at 10–40 m; tracks you. |
+| Meteors | Danger | 1.91 | **METEORS** / Keep moving | circle 15 m on you |  |
+| Nova | Danger | 2.81 | **NOVA** / Run out, 10 m | circle 10 m | Burning ground for 10 s. |
+| Taunt | None | — | — |  | No hit. |
+
+**The Queen**
+
+| Attack | Level | Wind-up | Warning | Area drawn | Notes |
+|---|---|---|---|---|---|
+| Rush | Danger | 1.44 | **RUSH** / Sidestep | cone 8 m × 120° | Below 60%. |
+| Acid spit | Danger | 1.48 | **ACID SPIT** / Move sideways | line to you | Below 80%; spawns broods. |
+| Slap | Caution (off) | 1.05 | **SLAP** / Get behind her or roll | cone 10 m × 145° |  |
+| Pierce | Caution (off) | 0.86 | **PIERCE** / Back out, 5 m | circle 4.5 m |  |
+| Bite | Caution (off) | 1.82 | **BITE** / Roll to the side | cone 10 m × 25° | Below 70%. |
+| Call | Info | 2.92 | announce: "Seekers incoming: kill the adds" |  | Below 99%. |
+| Teleport | Info | 2.54 | announce: "The Queen burrows: find her" |  | Below 90%. |
+
+**Fader**
+
+| Attack | Level | Wind-up | Warning | Area drawn | Notes |
+|---|---|---|---|---|---|
+| Flame breath | Danger | 2.34 | **FLAME BREATH** / Get behind Fader | line 39 m | 5–85%. |
+| Fissure | Danger | 2.88 | **FISSURE** / Keep moving | circle 11 m on you | Below 85%; every 20 s below 35%. |
+| Wall of fire | Danger | 1.43 | **WALL OF FIRE** / Leave through the gap | ring 8 m around you | 15–90%. |
+| Meteors | Danger | 1.17 | **METEORS** / Keep moving | circle 15 m on you | Every 18 s below 25%. |
+| Spin | Danger | 1.30 | **SPIN** / Back out, 9 m | circle 8.5 m |  |
+| Roar | Info | 1.53 | announce: "Charred Warriors incoming" |  | Below 55%. |
+| Bite | Caution (off) | 1.27 | **BITE** / Parry or roll | cone 10 m × 40° |  |
+| Claw left / right | Caution (off) | 1.24 | **CLAW** / Parry or roll | cone 10 m × 65° |  |
+
+**Kall Fimbulbringer**
+
+| Attack | Level | Wind-up | Warning | Area drawn | Notes |
+|---|---|---|---|---|---|
+| Chain whirl | Danger | 1.23 | **CHAIN WHIRL** / Back out, 9 m | circle 8.5 m | Phase 1; phase 3 above 75%. Hits twice. |
+| Chain rush | Danger | 2.02 | **CHAIN RUSH** / Sidestep | cone 10 m × 70° | Phase 1. |
+| Punch AoE | Danger | 1.24 | **GROUND PUNCH** / Back out, 9 m | circle 8.5 m | Phase 3. Hits three times. |
+| Spike rain | Danger | 3.35 | **SPIKE RAIN** / Keep moving | circle 30 m on you | Phase 3, below 35%. |
+| Chain flurry | Danger | 2.46 | **CHAIN FLURRY** / Step back | cone 5 m × 80° | Phase 3, below 50%. Four hits. |
+| Chain slam / double slam | Caution (off) | 1.43 | **CHAIN SLAM** / Sidestep | cone 10 m × 40° | Double slams hit again at 2.76. |
+| Double sweep | Caution (off) | 0.89 | **DOUBLE SWEEP** / Sidestep or roll | cone 10 m × 90° |  |
+| Tendrils | Info | 1.01 | announce: "Tendrils: kill them or break line of sight" |  | Phase 3. |
+
+**Phase and pull announces (Info)**
+
+| Boss | When | Announce |
+|---|---|---|
+| All bosses | Pull | “{Boss} engaged” when the boss bar appears. |
+| Fader | 85%, 55%, 35%, 25% | “Fader 85%: Fissure and Flame breath”, “55%: adds”, “35%: faster fissures and adds”, “25%: faster meteors” |
+| The Queen | 99%, 90%, 80%, 70%, 60% | “The Queen 90%: Teleport”, and so on as each ability unlocks |
+| Kall Fimbulbringer | 75%, 50% (phase 1); phase 2; 75%, 50%, 35% (phase 3) | “Phase 2: kill the aspects”, “Kall 35%: Spike rain”. Each aspect is announced as it spawns and uses its original boss’s warnings. |
