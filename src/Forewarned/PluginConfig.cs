@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using BepInEx.Configuration;
 using Forewarned.Core.Model;
+using UnityEngine;
 
 namespace Forewarned
 {
@@ -15,6 +16,20 @@ namespace Forewarned
         public static ConfigEntry<bool> OnlyDuringBossFight;
         public static ConfigEntry<bool> LogUnmappedTriggers;
         public static ConfigEntry<bool> Verbose;
+
+        public static ConfigEntry<float> Scale;
+        public static ConfigEntry<float> WarningOffsetY;
+        public static ConfigEntry<float> AnnounceOffsetY;
+        public static ConfigEntry<bool> ShowCountdownBar;
+        public static ConfigEntry<bool> ShowSeconds;
+        public static ConfigEntry<bool> EdgeFlash;
+        public static ConfigEntry<bool> GroundMarkers;
+        public static ConfigEntry<bool> PathArrow;
+        public static ConfigEntry<float> MarkerFillOpacity;
+        public static ConfigEntry<Color> DangerColor;
+        public static ConfigEntry<Color> CautionColor;
+        public static ConfigEntry<Color> InfoColor;
+        public static ConfigEntry<float> Volume;
 
         private sealed class BossRows
         {
@@ -48,6 +63,35 @@ namespace Forewarned
                 new ConfigDescription("Log boss animation triggers no module knows, once each, to catch attacks renamed by a game update.", null, Attr(10, true)));
             Verbose = cfg.Bind(general, "Verbose", false,
                 new ConfigDescription("Log every boss trigger, hit and decision. Noisy.", null, Attr(9, true)));
+
+            const string display = "01 Display";
+            Scale = cfg.Bind(display, "Scale", 1f,
+                new ConfigDescription("Size of the warnings and announce lines.", new AcceptableValueRange<float>(0.5f, 2.5f), Attr(100)));
+            WarningOffsetY = cfg.Bind(display, "WarningOffsetY", 120f,
+                new ConfigDescription("Height of the special warnings above the screen centre, in HUD pixels.", new AcceptableValueRange<float>(-400f, 600f), Attr(99)));
+            AnnounceOffsetY = cfg.Bind(display, "AnnounceOffsetY", 150f,
+                new ConfigDescription("Distance of the announce lines below the top of the screen, in HUD pixels (clear of the boss health bar).", new AcceptableValueRange<float>(0f, 800f), Attr(98)));
+            ShowCountdownBar = cfg.Bind(display, "ShowCountdownBar", true,
+                new ConfigDescription("A bar under each warning that runs out when the attack lands.", null, Attr(97)));
+            ShowSeconds = cfg.Bind(display, "ShowSeconds", true,
+                new ConfigDescription("Seconds left next to the bar.", null, Attr(96)));
+            EdgeFlash = cfg.Bind(display, "EdgeFlash", true,
+                new ConfigDescription("One pulse at the screen edges when a Danger warning appears.", null, Attr(95)));
+            GroundMarkers = cfg.Bind(display, "GroundMarkers", true,
+                new ConfigDescription("Draw attack areas on the ground (master switch for every ability's visual).", null, Attr(94)));
+            PathArrow = cfg.Bind(display, "PathArrow", true,
+                new ConfigDescription("An arrow at your feet showing the way out of the attack.", null, Attr(93)));
+            MarkerFillOpacity = cfg.Bind(display, "MarkerFillOpacity", 0.25f,
+                new ConfigDescription("How solid the area fill is (the outline stays strong).", new AcceptableValueRange<float>(0f, 1f), Attr(92)));
+            DangerColor = cfg.Bind(display, "DangerColor", Hex("#FF5A36"),
+                new ConfigDescription("Colour of Danger warnings and markers.", null, Attr(80, true)));
+            CautionColor = cfg.Bind(display, "CautionColor", Hex("#FFD23F"),
+                new ConfigDescription("Colour of Caution warnings and markers.", null, Attr(79, true)));
+            InfoColor = cfg.Bind(display, "InfoColor", Hex("#7EC8FF"),
+                new ConfigDescription("Colour of announce lines.", null, Attr(78, true)));
+
+            Volume = cfg.Bind("02 Sounds", "Volume", 0.7f,
+                new ConfigDescription("Alert volume (0 to 1), scaled by the game's master volume but not its effects slider.", new AcceptableValueRange<float>(0f, 1f), Attr(100)));
 
             foreach (BossModule m in modules)
                 BindBoss(cfg, m);
@@ -127,6 +171,23 @@ namespace Forewarned
         {
             AbilityRows r;
             return Abilities.TryGetValue(a, out r) && r.AlwaysWarn.Value;
+        }
+
+        private static Color Hex(string hex)
+        {
+            Color c;
+            ColorUtility.TryParseHtmlString(hex, out c);
+            return c;
+        }
+
+        public static Color ColorFor(Level level)
+        {
+            switch (level)
+            {
+                case Level.Danger: return DangerColor.Value;
+                case Level.Caution: return CautionColor.Value;
+                default: return InfoColor.Value;
+            }
         }
     }
 }
