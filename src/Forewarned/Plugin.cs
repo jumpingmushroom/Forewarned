@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Logging;
+using Forewarned.Core.Model.Bosses;
 using HarmonyLib;
 
 namespace Forewarned
@@ -27,6 +28,7 @@ namespace Forewarned
         private void Awake()
         {
             Log = Logger;
+            PluginConfig.Bind(Config, BossList.All);
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(ForewarnedPlugin).Assembly);
             Logger.LogInfo(PluginName + " " + PluginVersion + " loaded.");
