@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using Forewarned.Core.Model;
 using UnityEngine;
 
@@ -18,17 +17,6 @@ namespace Forewarned.UI
         private static AudioClip _chime;
         private static bool _hooked;
 
-        // AudioClip.SetData(float[], int) is called via reflection, not `clip.SetData(data, 0)` directly:
-        // UnityEngine.AudioModule.dll's SetData overload set references netstandard 2.1 (almost certainly
-        // a Span<float> overload), while this project's net472 build only has the netstandard 2.0 facade.
-        // Binding the call site statically makes csc resolve every SetData overload and fail with
-        // CS1705 ("... uses netstandard 2.1.0.0 which has a higher version than referenced assembly
-        // netstandard 2.0.0.0"), confirmed by isolating it with the real lib/UnityEngine.AudioModule.dll.
-        // Reflection defers that overload resolution to runtime, where the real member exists and is
-        // called exactly as before.
-        private static readonly MethodInfo SetDataMethod =
-            typeof(AudioClip).GetMethod("SetData", new[] { typeof(float[]), typeof(int) });
-
         public static void Ensure()
         {
             if (!_hooked)
@@ -36,15 +24,25 @@ namespace Forewarned.UI
                 WarningHud.NewWarning += OnNewWarning;
                 _hooked = true;
             }
-            if (_source != null)
+            if (_source != null && _horn != null && _chime != null)
                 return;
-            var go = new GameObject("ForewarnedAudio");
-            UnityEngine.Object.DontDestroyOnLoad(go);
-            _source = go.AddComponent<AudioSource>();
-            _source.playOnAwake = false;
-            _source.spatialBlend = 0f;
-            _horn = _horn ?? Horn();
-            _chime = _chime ?? Chime();
+            if (_source == null)
+            {
+                var go = new GameObject("ForewarnedAudio");
+                UnityEngine.Object.DontDestroyOnLoad(go);
+                _source = go.AddComponent<AudioSource>();
+                _source.playOnAwake = false;
+                _source.spatialBlend = 0f;
+            }
+            try
+            {
+                _horn = _horn ?? Horn();
+                _chime = _chime ?? Chime();
+            }
+            catch (Exception e)
+            {
+                ForewarnedPlugin.WarnOnce("AlertSounds", e);
+            }
         }
 
         public static void Play(Level level)
@@ -114,8 +112,20 @@ namespace Forewarned.UI
             if (max > 0f)
                 for (int i = 0; i < data.Length; i++)
                     data[i] *= peak / max;
-            AudioClip clip = AudioClip.Create(name, data.Length, 1, Rate, false);
-            SetDataMethod.Invoke(clip, new object[] { data, 0 });
+            // The float[] SetData overload set doesn't compile against this AudioModule on net472; the
+            // PCM callback overload does, so the clip is filled through it instead.
+            int position = 0;
+            AudioClip clip = AudioClip.Create(name, data.Length, 1, Rate, false, buffer =>
+            {
+                int n = Math.Min(buffer.Length, data.Length - position);
+                if (n > 0)
+                {
+                    Array.Copy(data, position, buffer, 0, n);
+                    position += n;
+                }
+                if (n < buffer.Length)
+                    Array.Clear(buffer, n, buffer.Length - n);
+            });
             return clip;
         }
     }
