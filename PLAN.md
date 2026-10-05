@@ -369,9 +369,17 @@ Agreed so far:
   `Enabled` switch, then three rows per ability kept together with `Order`
   (`Flame breath: warning` / `: sound` / `: visual`). The level and the always-warn override are
   advanced rows. Plain entries work in F1, r2modman's config editor and a hand-edited `.cfg`.
+- **Modules and data (2026-10-05): the module declares, the game supplies the numbers.** A boss
+  module names each ability's item prefab (`Fader_Flamebreath`) and triggers, plus our choices
+  (level, wording keys, response, shape kind). Cooldown, health gates, range and AoE geometry are
+  read from the boss's own inventory items when it appears (every client has them); the wind-up
+  is read once from the clip's `Hit`/`OnAttackTrigger` event and cached. The offline research
+  values are the fallback and the test fixtures. A pure-model **tracker** records every trigger
+  seen per boss and ability, plus the boss's health percentage, so later "next X in ~N s" timers
+  only add a reader. Boss-specific logic (phase announces, Moder's flying state) lives in small
+  optional overrides on the module class.
 
 Open, to settle in the brainstorm before any design is written:
-- How modules leave room for timers and prediction.
 - Accessibility: working alongside Earshot (colour-blind safety settled with the colours).
 - The first milestone's boss list and its definition of done.
 
