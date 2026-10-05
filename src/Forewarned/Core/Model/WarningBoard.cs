@@ -21,6 +21,11 @@ namespace Forewarned.Core.Model
         public Response Response;
         /// <summary>Where a Target-anchored shape lands; the boss's position at the trigger otherwise.</summary>
         public Vec2 Origin;
+        /// <summary>The boss's position at the trigger. Boss-anchored shapes follow the live boss when it's
+        /// tracked; this is the fallback, and the reference for directions such as "away from the boss".</summary>
+        public Vec2 BossPos;
+        /// <summary>The boss's facing at the trigger, a unit vector.</summary>
+        public Vec2 BossFacing;
         /// <summary>Set by the board: Sound, unless the same ability sounded less than SoundGap ago.</summary>
         public bool PlaySound;
     }

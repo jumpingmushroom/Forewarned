@@ -130,7 +130,9 @@ namespace Forewarned.Core.Model
                 Visual = _settings.Visual(spec),
                 Shape = a.Shape,
                 Response = spec.Response,
-                Origin = origin
+                Origin = origin,
+                BossPos = scene.BossPos,
+                BossFacing = scene.BossFacing.Normalized
             };
             return "special " + Board.Offer(w, e.Time).ToString().ToLowerInvariant() + ", " + where;
         }

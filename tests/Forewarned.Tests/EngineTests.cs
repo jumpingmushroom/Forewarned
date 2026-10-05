@@ -269,5 +269,20 @@ namespace Forewarned.Tests
             Assert.Empty(e.Board.Active);
             Assert.Empty(e.Recent);
         }
+
+        [Fact]
+        public void TheWarningRemembersTheBossPose()
+        {
+            Engine e = Make();
+            var scene = At(0f, 10f);
+            scene.BossPos = new Vec2(1f, 2f);
+            scene.Me = new Vec2(1f, 12f);
+            scene.BossFacing = new Vec2(0f, 0.5f);
+            e.OnTrigger(Fader("attack_flamebreath", 10f), scene, true);
+            Warning w = Assert.Single(e.Board.Active);
+            Assert.Equal(1f, w.BossPos.X);
+            Assert.Equal(2f, w.BossPos.Z);
+            Assert.Equal(1f, w.BossFacing.Z, 3);
+        }
     }
 }
