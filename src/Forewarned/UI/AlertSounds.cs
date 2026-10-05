@@ -40,8 +40,11 @@ namespace Forewarned.UI
                 return;
             try
             {
+                bool hadBoth = _horn != null && _chime != null;
                 _horn = _horn ?? Horn();
                 _chime = _chime ?? Chime();
+                if (!hadBoth && _horn != null && _chime != null)
+                    ForewarnedPlugin.Log.LogInfo("Forewarned: alert sounds ready");
             }
             catch (Exception e)
             {
@@ -76,7 +79,7 @@ namespace Forewarned.UI
 
         private static AudioClip Horn()
         {
-            const float length = 0.45f;
+            const float length = 0.8f;
             int n = (int)(Rate * length);
             var data = new float[n];
             for (int i = 0; i < n; i++)
@@ -85,7 +88,7 @@ namespace Forewarned.UI
                 double s = 0;
                 for (int k = 1; k <= 6; k++)
                     s += Math.Sin(2 * Math.PI * 110 * k * t) / k;
-                double env = Math.Min(1.0, t / 0.04) * Math.Min(1.0, (length - t) / 0.15);
+                double env = Math.Min(1.0, t / 0.04) * Math.Min(1.0, (length - t) / 0.25);
                 data[i] = (float)(s * env);
             }
             return Clip("forewarned_horn", data, 0.8f);

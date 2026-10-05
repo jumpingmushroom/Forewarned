@@ -340,8 +340,9 @@ Agreed so far:
 
   Each ability has a default level that can be changed in F1.
 - **Layout (2026-10-05): DBM classic.** The special warning sits just above the crosshair with its
-  countdown bar directly under it; announce lines sit under the boss health bar. This keeps clear
-  of the crosshair, the character, vanilla's centre message (MessageHud) and Earshot's
+  countdown bar directly under it; announce lines sit under the boss health bar. The stack grows
+  upward from `WarningOffsetY` (35 px: its bottom edge above the screen centre), newest on top. This
+  keeps clear of the crosshair, the character, vanilla's centre message (MessageHud) and Earshot's
   bottom-centre captions. Every element has position and scale options in F1.
 - **Colours (2026-10-05): a severity ramp.** Danger red-orange `#FF5A36`, Caution yellow
   `#FFD23F`, Info sky blue `#7EC8FF`. They differ in brightness as well as hue, so they stay apart
@@ -361,7 +362,7 @@ Agreed so far:
   hazards (burning ground, fissure pools, poison cloud) are not outlined. This is the per-ability
   "visual" toggle, on by default for Danger only.
 - **Alert sounds (2026-10-05): our own, synthesised in code at startup.** Danger: a short low horn
-  blast (~0.4 s). Caution: a soft two-note chime. Info: silent. No audio files, no licensing.
+  blast (~0.8 s). Caution: a soft two-note chime. Info: silent. No audio files, no licensing.
   Default volume 0.7 with its own F1 slider, scaled by the game's master volume but not the SFX
   slider. Sound is on by default for Danger and Caution (Caution warnings themselves are off by
   default). Per-ability sound toggles, a test button per level in F1, and the same ability never
@@ -613,9 +614,10 @@ F1. **Info:** announce line only. **None:** no warning. Wind-up: seconds to the 
 - **Canvas** under `Hud.instance.m_rootObject`, so it hides with the HUD (F3, photo mode).
   TextMeshPro with the game's font (from MessageHud's centre text). Sprites (⚠, vignette, bar)
   generated in code.
-- **Special warnings**: two slots anchored `WarningOffsetY` (120 px) above centre. Danger: 34 px
-  title in its colour with a thick dark outline and the ⚠ sprite, 20 px white action line. Caution:
-  26 px, no ⚠. Scaled by the game's GUI scale × `Scale`.
+- **Special warnings**: two slots, the stack grows upward from `WarningOffsetY` (35 px: its bottom
+  edge above the screen centre), newest on top. Danger: 34 px title in its colour with a thick dark
+  outline and the ⚠ sprite, 20 px white action line. Caution: 26 px, no ⚠. Scaled by the game's GUI
+  scale × `Scale`.
 - **Countdown bar** under its warning (300 px Danger, 200 px Caution), filled in the level colour,
   draining from trigger to hit, remaining seconds to one decimal at its right. It snaps to the real
   hit.
@@ -643,7 +645,7 @@ F1. **Info:** announce line only. **None:** no warning. Wind-up: seconds to the 
   | Section | Settings (default) |
   |---|---|
   | `00 General` | `Enabled` (on), `OnlyDuringBossFight` (on), `LogUnmappedTriggers` (off), `Verbose` (off, advanced) |
-  | `01 Display` | `Scale` (1), `WarningOffsetY` (120), `AnnounceOffsetY`, `ShowCountdownBar` (on), `ShowSeconds` (on), `EdgeFlash` (on), `GroundMarkers` (on; master for all visuals), `PathArrow` (on), `MarkerFillOpacity` (0.25), `DangerColor` / `CautionColor` / `InfoColor` (advanced) |
+  | `01 Display` | `Scale` (1), `WarningOffsetY` (35), `AnnounceOffsetY`, `ShowCountdownBar` (on), `ShowSeconds` (on), `EdgeFlash` (on), `GroundMarkers` (on; master for all visuals), `PathArrow` (on), `MarkerFillOpacity` (0.25), `DangerColor` / `CautionColor` / `InfoColor` (advanced) |
   | `02 Sounds` | `Volume` (0.7), `TestDanger` / `TestCaution` buttons (custom drawers; also `forewarned test`) |
   | `03 Eikthyr` … `10 Kall Fimbulbringer` | `Enabled`, `Pull and phase announces`, per ability `X: warning` / `X: sound` / `X: visual`, advanced `X: level` and `X: always warn` |
 

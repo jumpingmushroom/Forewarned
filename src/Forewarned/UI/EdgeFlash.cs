@@ -34,6 +34,7 @@ namespace Forewarned.UI
             _instance._image.sprite = Sprites.Vignette;
             _instance._image.raycastTarget = false;
             _instance._image.enabled = false;
+            ForewarnedPlugin.Log.LogInfo("Forewarned: edge flash ready");
         }
 
         public static void Pulse(Color c)
@@ -49,7 +50,7 @@ namespace Forewarned.UI
             try
             {
                 float t = Time.time - _start;
-                bool on = t >= 0f && t <= Duration && !Hud.IsUserHidden();
+                bool on = t >= 0f && t <= Duration && !UiUtil.HudHidden();
                 if (_image.enabled != on)
                     _image.enabled = on;
                 if (!on)

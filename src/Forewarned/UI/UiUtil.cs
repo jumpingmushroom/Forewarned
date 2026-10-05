@@ -14,6 +14,16 @@ namespace Forewarned.UI
             return rt;
         }
 
+        /// <summary>True while the player hid the HUD (F3) or the game hid it itself (cutscenes call
+        /// Hud.SetVisible(false)): every Forewarned HUD element hides along with the game's own.</summary>
+        public static bool HudHidden()
+        {
+            if (Hud.IsUserHidden())
+                return true;
+            Hud hud = Hud.instance;
+            return hud == null || !hud.IsVisible();
+        }
+
         /// <summary>The HUD's own font, so warnings match the game and cover its languages.</summary>
         public static TMP_FontAsset Font
         {

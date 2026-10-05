@@ -49,6 +49,7 @@ namespace Forewarned.Core
             Steps.Clear();
             Steps.Add(new Step { At = 0f, Run = now => Runtime.Engine.Announcer.Add("demo.pull", "Fader engaged", now) });
             Steps.Add(new Step { At = 0.5f, Run = now => Offer("FLAME BREATH", "Get behind Fader", Level.Danger, Shape.Line(39.45f, 3f), Response.GetBehind, 2.34f, now) });
+            Steps.Add(new Step { At = 1.5f, Run = now => Offer("CLAW", "Parry or roll", Level.Caution, Shape.Cone(10f, 65f), Response.Parry, 1.24f, now) }); // overlaps the flame breath, so the demo shows stacking
             Steps.Add(new Step { At = 3.5f, Run = now => Runtime.Engine.Announcer.Add("demo.adds", "Charred Warriors incoming", now) });
             Steps.Add(new Step { At = 4f, Run = now => Offer("CLAW", "Parry or roll", Level.Caution, Shape.Cone(10f, 65f), Response.Parry, 1.24f, now) });
             Steps.Add(new Step { At = 6f, Run = now => Offer("METEORS", "Keep moving", Level.Danger, Shape.Circle(15f, 0f, Anchor.Target), Response.KeepMoving, 1.17f, now) });

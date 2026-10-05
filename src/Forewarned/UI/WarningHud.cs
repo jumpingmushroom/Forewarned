@@ -10,9 +10,10 @@ using UnityEngine.UI;
 namespace Forewarned.UI
 {
     /// <summary>
-    /// PLAN.md §9/§11.4: the special warnings, stacked downward from WarningOffsetY above the screen
-    /// centre, newest on top. Each slot: ⚠ + title (Danger 34 px, Caution 26 px) in the level colour, the
-    /// action line (20 px white) and a countdown bar that drains to the hit. Lives under Hud.m_rootObject.
+    /// PLAN.md §9/§11.4: the special warnings, stacked upward from WarningOffsetY (the stack's bottom
+    /// edge) above the screen centre, newest on top. Each slot: ⚠ + title (Danger 34 px, Caution 26 px)
+    /// in the level colour, the action line (20 px white) and a countdown bar that drains to the hit.
+    /// Lives under Hud.m_rootObject.
     /// </summary>
     internal sealed class WarningHud : MonoBehaviour
     {
@@ -47,6 +48,7 @@ namespace Forewarned.UI
         }
 
         private readonly Slot[] _slots = new Slot[WarningBoard.Slots];
+        private readonly float[] _heights = new float[WarningBoard.Slots];
         private readonly HashSet<Warning> _seen = new HashSet<Warning>();
         private readonly List<Warning> _gone = new List<Warning>();
         private RectTransform _root;
@@ -60,10 +62,11 @@ namespace Forewarned.UI
                 return;
             RectTransform root = UiUtil.Rect("ForewarnedWarnings", hud.m_rootObject.transform);
             root.anchorMin = root.anchorMax = new Vector2(0.5f, 0.5f);
-            root.pivot = new Vector2(0.5f, 1f);
+            root.pivot = new Vector2(0.5f, 0f);
             root.sizeDelta = new Vector2(Width, 300f);
             _instance = root.gameObject.AddComponent<WarningHud>();
             _instance.Build(root);
+            ForewarnedPlugin.Log.LogInfo("Forewarned: warnings HUD ready");
         }
 
         private void Build(RectTransform root)
@@ -76,7 +79,7 @@ namespace Forewarned.UI
         private Slot MakeSlot(int i)
         {
             RectTransform rt = UiUtil.Rect("Slot" + i, _root);
-            TopCentre(rt, 0f, Width, 100f);
+            BottomCentre(rt, 0f, Width, 100f);
             var s = new Slot { Root = rt, Group = rt.gameObject.AddComponent<CanvasGroup>() };
             s.Group.interactable = false;
             s.Group.blocksRaycasts = false;
@@ -126,6 +129,15 @@ namespace Forewarned.UI
             r.sizeDelta = new Vector2(w, h);
         }
 
+        /// <summary>A slot's own rect, anchored and pivoted at its bottom edge so the stack grows upward.</summary>
+        private static void BottomCentre(RectTransform r, float y, float w, float h)
+        {
+            r.anchorMin = r.anchorMax = new Vector2(0.5f, 0f);
+            r.pivot = new Vector2(0.5f, 0f);
+            r.anchoredPosition = new Vector2(0f, y);
+            r.sizeDelta = new Vector2(w, h);
+        }
+
         private void LateUpdate()
         {
             try
@@ -159,26 +171,34 @@ namespace Forewarned.UI
             foreach (Warning w in _gone)
                 _seen.Remove(w);
 
-            if (Hud.IsUserHidden())
+            if (UiUtil.HudHidden())
             {
                 HideAll();
                 return;
             }
             float now = Time.time;
-            float y = 0f;
+            // Heights first (styling each visible slot), then place from the oldest (bottom, y = 0) to
+            // the newest (top): active[0] is newest (WarningBoard.Active), so the stack is filled back
+            // to front.
             for (int i = 0; i < _slots.Length; i++)
             {
                 if (i < active.Count)
-                    y += Show(_slots[i], active[i], now, y) + SlotGap;
+                    _heights[i] = Show(_slots[i], active[i], now);
                 else
                     Hide(_slots[i]);
+            }
+            float y = 0f;
+            for (int i = active.Count - 1; i >= 0; i--)
+            {
+                BottomCentre(_slots[i].Root, y, Width, _heights[i]);
+                y += _heights[i] + SlotGap;
             }
             _root.anchoredPosition = new Vector2(0f, PluginConfig.WarningOffsetY.Value);
             _root.localScale = Vector3.one * PluginConfig.Scale.Value;
         }
 
         /// <returns>The slot's height.</returns>
-        private float Show(Slot s, Warning w, float now, float y)
+        private float Show(Slot s, Warning w, float now)
         {
             if (!s.Root.gameObject.activeSelf)
                 s.Root.gameObject.SetActive(true);
@@ -195,10 +215,14 @@ namespace Forewarned.UI
             Color c = PluginConfig.ColorFor(w.Level);
             float titleH = titleSize * 1.25f;
             TopCentre(s.Title.rectTransform, 0f, Width, titleH);
+            // The ⚠ icon sits left of the title; shift both right by half its footprint so the
+            // icon+title group reads centred rather than the title alone.
+            float shift = danger ? (IconSize + 8f) * 0.5f : 0f;
+            s.Title.rectTransform.anchoredPosition = new Vector2(shift, s.Title.rectTransform.anchoredPosition.y);
             s.Title.color = c;
             s.Icon.gameObject.SetActive(danger);
             s.Icon.color = c;
-            s.Icon.rectTransform.anchoredPosition = new Vector2(-s.TitleWidth * 0.5f - IconSize * 0.5f - 8f, -titleH * 0.5f);
+            s.Icon.rectTransform.anchoredPosition = new Vector2(shift - s.TitleWidth * 0.5f - IconSize * 0.5f - 8f, -titleH * 0.5f);
             float actionH = ActionSize * 1.3f;
             TopCentre(s.Action.rectTransform, titleH + Gap, Width, actionH);
             s.Action.color = Color.white;
@@ -220,8 +244,6 @@ namespace Forewarned.UI
                 h += Gap + BarHeight;
             }
 
-            s.Root.anchoredPosition = new Vector2(0f, -y);
-            s.Root.sizeDelta = new Vector2(Width, h);
             s.Group.alpha = WarningBoard.Alpha(w, now);
             return h;
         }

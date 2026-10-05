@@ -68,8 +68,8 @@ namespace Forewarned
             const string display = "01 Display";
             Scale = cfg.Bind(display, "Scale", 1f,
                 new ConfigDescription("Size of the warnings and announce lines.", new AcceptableValueRange<float>(0.5f, 2.5f), Attr(100)));
-            WarningOffsetY = cfg.Bind(display, "WarningOffsetY", 120f,
-                new ConfigDescription("Height of the special warnings above the screen centre, in HUD pixels.", new AcceptableValueRange<float>(-400f, 600f), Attr(99)));
+            WarningOffsetY = cfg.Bind(display, "WarningOffsetY", 35f,
+                new ConfigDescription("Height of the bottom of the warning stack above the screen centre, in HUD pixels.", new AcceptableValueRange<float>(-400f, 600f), Attr(99)));
             AnnounceOffsetY = cfg.Bind(display, "AnnounceOffsetY", 150f,
                 new ConfigDescription("Distance of the announce lines below the top of the screen, in HUD pixels (clear of the boss health bar).", new AcceptableValueRange<float>(0f, 800f), Attr(98)));
             ShowCountdownBar = cfg.Bind(display, "ShowCountdownBar", true,

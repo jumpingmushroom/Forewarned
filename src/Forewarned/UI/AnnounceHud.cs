@@ -43,6 +43,7 @@ namespace Forewarned.UI
                 t.gameObject.SetActive(false);
                 _instance._lines[i] = t;
             }
+            ForewarnedPlugin.Log.LogInfo("Forewarned: announce lines ready");
         }
 
         private void LateUpdate()
@@ -61,7 +62,7 @@ namespace Forewarned.UI
         private void Draw()
         {
             Engine engine = Runtime.Engine;
-            if (engine == null || !PluginConfig.Enabled.Value || Player.m_localPlayer == null || Hud.IsUserHidden())
+            if (engine == null || !PluginConfig.Enabled.Value || Player.m_localPlayer == null || UiUtil.HudHidden())
             {
                 HideAll();
                 return;

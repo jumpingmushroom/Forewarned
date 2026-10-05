@@ -43,14 +43,15 @@ namespace Forewarned.Core
             }
             _hadPlayer = true;
             float now = Time.time;
-            BossWatch.Tick(now);
-            Engine.Tick(now);
-            DemoSequence.Tick(now);
+            // Built before the ticks below, so an exception in a tick can't stop the HUD being built.
             WarningHud.Ensure();
             AnnounceHud.Ensure();
             EdgeFlash.Ensure();
             AlertSounds.Ensure();
             GroundMarkers.Ensure();
+            BossWatch.Tick(now);
+            Engine.Tick(now);
+            DemoSequence.Tick(now);
         }
 
         public static void Debug(string line)

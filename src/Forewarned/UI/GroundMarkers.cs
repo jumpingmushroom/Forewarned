@@ -57,6 +57,7 @@ namespace Forewarned.UI
             var go = new GameObject("ForewarnedGroundMarkers");
             _instance = go.AddComponent<GroundMarkers>();
             _instance.Build();
+            ForewarnedPlugin.Log.LogInfo("Forewarned: ground markers ready");
         }
 
         private void Build()
@@ -167,7 +168,7 @@ namespace Forewarned.UI
         {
             Engine engine = Runtime.Engine;
             Player me = Player.m_localPlayer;
-            if (engine == null || me == null || !PluginConfig.Enabled.Value || !PluginConfig.GroundMarkers.Value || Hud.IsUserHidden())
+            if (engine == null || me == null || !PluginConfig.Enabled.Value || !PluginConfig.GroundMarkers.Value || UiUtil.HudHidden())
             {
                 HideAll();
                 return;
@@ -179,7 +180,9 @@ namespace Forewarned.UI
             bool arrowShown = false;
             foreach (Warning w in engine.Board.Active)
             {
-                if (!w.Visual || w.Shape == null || w.Shape.Kind == ShapeKind.None || used >= _markers.Length)
+                // PLAN.md §9: both the marker and the arrow clear when the hit lands; the text and bar
+                // keep their linger (WarningHud draws those from the same Warning, unaffected here).
+                if (!w.Visual || w.Shape == null || w.Shape.Kind == ShapeKind.None || used >= _markers.Length || now >= w.HitAt)
                     continue;
                 Vec2 origin, facing, bossPos;
                 Pose(w, out origin, out facing, out bossPos);
