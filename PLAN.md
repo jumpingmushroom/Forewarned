@@ -631,7 +631,7 @@ F1. **Info:** announce line only. **None:** no warning. Wind-up: seconds to the 
   fissure, the ring around you for wall of fire). Pooled, at most two.
 - **Path arrow**: a flat ~2.5 m world-space arrow at the player's feet, white with a dark edge,
   pointing along `SafeDirection`, updated every frame, hidden once the player is out of the area.
-- **Alert sounds**: synthesised at startup with `AudioClip.Create`. Horn: ~0.45 s, 110 Hz with a few
+- **Alert sounds**: synthesised at startup with `AudioClip.Create`. Horn: ~0.8 s, 110 Hz with a few
   harmonics, soft attack and release. Chime: two short sine notes a fifth apart. One 2-D
   `AudioSource` at `Volume` × the game's master volume (the SFX slider is ignored).
 
