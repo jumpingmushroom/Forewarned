@@ -343,6 +343,11 @@ Agreed so far:
   under deuteranopia, protanopia and tritanopia (checked against the Machado 2009 simulation).
   Colour is never the only signal: Danger also has a ⚠ sprite, larger text and the edge flash.
   All colours are editable in F1 as advanced settings.
+- **Timing and stacking (2026-10-05): tied to the wind-up.** A special warning shows from the
+  trigger until the hit lands plus 0.5 s, then fades over 0.3 s, with a 1.2 s minimum. At most two
+  special-warning lines, newest on top. A Caution never evicts a Danger (a new Caution is dropped
+  if both slots hold Danger). The same ability firing again replaces its own line. A Danger
+  starts with one 0.4 s screen-edge pulse. Lingering ground hazards are not kept as text.
 
 Open, to settle in the brainstorm before any design is written:
 - Warning types and their look: special warning, announce, countdown bar, ground marker, arrow,
