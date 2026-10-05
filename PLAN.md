@@ -413,6 +413,12 @@ Agreed so far:
 - **Progress:** milestone 1 plan 1 (scaffold and pure model, `docs/superpowers/plans/2026-10-05-m1-plan1-scaffold-and-model.md`) is done: 106 model tests green. Next: plan 2 (game-side capture, live data, config, console).
 - **Progress:** milestone 1 plan 2 (game-side capture, live data, config, console, Eikthyr module) is done and deployed; in-game checks happen in the first Eikthyr session after plan 3.
 - **Progress:** milestone 1 plan 3 (HUD, sounds, ground markers, path arrow, test/demo) is done and deployed for the first Eikthyr session. Still open for the definition of done: in-game checks (#3 timing, #4 sightings and screenshots, #5 live F1 toggles, #7 probes) and Fader/Moder sessions.
+- **First Eikthyr session (2026-10-05, rig, solo):** all console tests and the demo ran; the fight was
+  warned end to end with no Forewarned warnings or errors in the log. Live numbers read from his items
+  equal the offline ones (stomp r 10 m at 3 m, charge 20 m × 45°, antler 4.5 m × 25°, same cooldowns
+  and ranges). Measured trigger → hit: charge 1.58 s (offline 1.56), stomp 2.90 s (2.89), antler 0.60 s
+  (0.60), identical across repeats, so DoD #2 and #3 hold for Eikthyr. He was tracked, alerted and
+  pulled on first notice and his first attack 3 s later was warned. No unmapped triggers.
 
 All brainstorm decisions are settled (2026-10-05). The ability table is §10 and the design §11.
 
