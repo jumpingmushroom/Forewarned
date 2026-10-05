@@ -30,6 +30,7 @@ namespace Forewarned
         {
             Log = Logger;
             PluginConfig.Bind(Config, BossList.All);
+            ForewarnedConsole.Register();
             _harmony = new Harmony(PluginGuid);
             _harmony.PatchAll(typeof(ForewarnedPlugin).Assembly);
             Logger.LogInfo(PluginName + " " + PluginVersion + " loaded.");
