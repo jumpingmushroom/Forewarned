@@ -1,0 +1,2 @@
+# Forewarned strings: "key = text", '#' comments. {boss} is the boss's localised name,
+# {what} an ability name, {m} a distance in metres.

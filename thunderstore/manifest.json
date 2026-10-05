@@ -1,0 +1,9 @@
+{
+  "name": "Forewarned",
+  "version_number": "0.0.1",
+  "website_url": "https://github.com/jumpingmushroom/Forewarned",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2350"
+  ],
+  "description": "Boss attack warnings in the style of Deadly Boss Mods: what's coming, what to do, a countdown to the hit and the danger drawn on the ground. Client-side."
+}
