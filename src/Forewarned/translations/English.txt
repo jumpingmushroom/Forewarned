@@ -1,2 +1,38 @@
 # Forewarned strings: "key = text", '#' comments. {boss} is the boss's localised name,
-# {what} an ability name, {m} a distance in metres.
+# {what} an ability name, {m} a distance in metres (rounded up from the attack's size).
+# Titles are the ".name" strings in capitals.
+
+announce.pull = {boss} engaged
+announce.elsewhere = {boss}: {what}
+
+action.get_behind = Get behind {boss}
+action.keep_moving = Keep moving
+action.leave_gap = Leave through the gap
+action.back_out_m = Back out, {m} m
+action.run_out_m = Run out, {m} m
+action.leave_line = Get out of the line
+action.parry_roll = Parry or roll
+action.block_sidestep = Block or sidestep
+action.parry_step_back = Parry or step back
+
+fader.flamebreath.name = Flame breath
+fader.fissure.name = Fissure
+fader.walloffire.name = Wall of fire
+fader.meteors.name = Meteors
+fader.spin.name = Spin
+fader.roar.name = Roar
+fader.roar.action = Charred Warriors incoming
+fader.bite.name = Bite
+fader.claw.name = Claw
+fader.phase.85 = {boss} 85%: Fissure and Flame breath
+fader.phase.55 = {boss} 55%: Charred Warriors
+fader.phase.35 = {boss} 35%: faster Fissure and adds
+fader.phase.25 = {boss} 25%: faster Meteors
+
+moder.breath.name = Cold breath
+moder.icebarrage.name = Ice barrage
+moder.bite.name = Bite
+moder.claw.name = Claw
+moder.scream.name = Scream
+moder.takeoff = {boss} takes off
+moder.land = {boss} lands
