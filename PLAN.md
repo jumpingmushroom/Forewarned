@@ -338,6 +338,11 @@ Agreed so far:
   countdown bar directly under it; announce lines sit under the boss health bar. This keeps clear
   of the crosshair, the character, vanilla's centre message (MessageHud) and Earshot's
   bottom-centre captions. Every element has position and scale options in F1.
+- **Colours (2026-10-05): a severity ramp.** Danger red-orange `#FF5A36`, Caution yellow
+  `#FFD23F`, Info sky blue `#7EC8FF`. They differ in brightness as well as hue, so they stay apart
+  under deuteranopia, protanopia and tritanopia (checked against the Machado 2009 simulation).
+  Colour is never the only signal: Danger also has a ⚠ sprite, larger text and the edge flash.
+  All colours are editable in F1 as advanced settings.
 
 Open, to settle in the brainstorm before any design is written:
 - Warning types and their look: special warning, announce, countdown bar, ground marker, arrow,
@@ -346,5 +351,5 @@ Open, to settle in the brainstorm before any design is written:
 - Which abilities warn, their urgency, and the exact wording.
 - Defaults, and the per-boss and per-ability option layout in F1.
 - How modules leave room for timers and prediction.
-- Accessibility: colour-blind safety; working alongside Earshot.
+- Accessibility: working alongside Earshot (colour-blind safety settled with the colours).
 - The first milestone's boss list and its definition of done.
