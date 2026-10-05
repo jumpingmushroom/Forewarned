@@ -318,6 +318,13 @@ Agreed so far:
   trigger name). The same code runs solo and in multiplayer and fires at the start of the wind-up.
   Modules also claim Kall's phase-2 aspect prefabs. No sound hook and no `StartAttack` hook. A debug
   option logs triggers seen on bosses that no module maps, to catch renamed animations.
+- **Who gets a warning (2026-10-05): tiered by where you stand.** When the trigger fires, the
+  local player is tested against the attack's area (cone, circle, line, ring) from the boss's
+  position and facing, with a margin. Inside or near it: the special warning. Outside: an announce
+  line, or nothing for minor attacks. Attacks that pick a target (fissure, meteors, wall of fire,
+  roots) count as aimed at you if you're within their range and the boss faces you, or you're the
+  only player in range. Each ability has an "always warn" option that skips the test. Solo, you're
+  always the target, so the facing guess matters only in multiplayer.
 
 Open, to settle in the brainstorm before any design is written:
 - Warning types and their look: special warning, announce, countdown bar, ground marker, arrow,
