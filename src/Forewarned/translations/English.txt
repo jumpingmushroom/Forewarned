@@ -14,6 +14,12 @@ action.leave_line = Get out of the line
 action.parry_roll = Parry or roll
 action.block_sidestep = Block or sidestep
 action.parry_step_back = Parry or step back
+action.sidestep_line = Sidestep out of the line
+action.block_step_aside = Block or step aside
+
+eikthyr.stomp.name = Stomp
+eikthyr.charge.name = Charge
+eikthyr.antler.name = Antler
 
 fader.flamebreath.name = Flame breath
 fader.fissure.name = Fissure

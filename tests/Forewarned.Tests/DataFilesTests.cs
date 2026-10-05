@@ -27,7 +27,7 @@ namespace Forewarned.Tests
         public void TheRegistryBuildsFromEveryModule()
         {
             var r = new ModuleRegistry(BossList.All);
-            Assert.Equal(2, r.Modules.Count);
+            Assert.Equal(3, r.Modules.Count);
         }
 
         [Fact]
